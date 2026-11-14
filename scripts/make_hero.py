@@ -1,23 +1,23 @@
-"""Turns a portrait photo into assets/hero.svg: on a night-blue card, the GitHub mark on the left and
-my portrait on the right, both drawn in dots in the profile's colours, with my name decoding under the portrait.
+"""Turns a portrait photo into assets/hero.svg: on a night-blue card, my portrait on the left and
+the Octocat on the right, both drawn in dots in the profile's colours, with my name decoding under the portrait.
 
 The dots are drawn as real SVG shapes (not font characters), so the picture looks
 exactly the same on every device.
 
 Only needs to run once:  python scripts/make_hero.py path/to/photo.png
-The photo itself is not stored in the repo. The GitHub mark comes from scripts/github-mark.png.
+The photo itself is not stored in the repo. The Octocat comes from scripts/octocat.png.
 """
 import base64
 import random
 import sys
 
-from PIL import Image, ImageEnhance, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
 
 from common import PALETTE, ROOT, write_asset
 
 NAME = "MBISHIBISHI Flavien"
 DOTS_W = 220          # dots across the portrait
-LOGO_W = 170          # dots across the GitHub mark
+LOGO_W = 210          # dots across the Octocat
 PITCH = 2             # distance between dots
 DOT = 1.55            # dot size
 BAND = 4              # dot rows that appear together while the picture settles
@@ -72,19 +72,25 @@ def portrait_dots(photo):
     return to_grid(black, DOTS_W, int(img.height * DOTS_W / img.width) // BAND * BAND)
 
 
-def logo_dots():
-    """The GitHub mark as dots: brightest near the top right, softer towards the rim."""
-    mark = Image.open(ROOT / "scripts" / "github-mark.png").convert("L")
-    mark = mark.crop(mark.point(lambda v: 255 if v > 128 else 0).getbbox())
-    w = h = mark.width  # the mark's circle is as tall as it is wide
-    canvas = Image.new("L", (w, h), 0)
-    canvas.paste(mark, (0, 0))
-    cx, cy, far = w * 0.62, h * 0.35, (w * w * 0.62 ** 2 + h * h * 0.65 ** 2) ** 0.5
-    glow = Image.new("L", (w, h))
-    glow.putdata([int(255 * (1 - 0.5 * ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5 / far)) for y in range(h) for x in range(w)])
-    shape = Image.new("L", (w, h), 0)
-    shape.paste(glow, mask=canvas.point(lambda v: 255 if v > 128 else 0))
-    return to_grid(shape, LOGO_W, LOGO_W // BAND * BAND)
+def octocat_dots():
+    """The Octocat (scripts/octocat.png) as dots.
+
+    The cat is drawn on white, so the background is the white area touching the edges of the image
+    (flood fill); white inside the cat, like its eyes, stays part of it. Inside the cat, lighter
+    colours get more dots: the black body is a soft blue texture, the face and eyes glow cream and gold.
+    """
+    img = Image.open(ROOT / "scripts" / "octocat.png").convert("RGB")
+    bg = img.copy()
+    for corner in [(0, 0), (img.width - 1, 0), (0, img.height - 1), (img.width - 1, img.height - 1)]:
+        ImageDraw.floodfill(bg, corner, (255, 0, 255), thresh=40)
+    mask = Image.new("L", img.size)
+    mask.putdata([0 if p == (255, 0, 255) else 255 for p in bg.get_flattened_data()])
+    box = mask.getbbox()
+    img, mask = img.crop(box), mask.crop(box)
+    gray = ImageOps.grayscale(img).point(lambda v: int(255 * (0.3 + 0.7 * (v / 255) ** 1.6)))
+    cat = Image.new("L", img.size, 0)
+    cat.paste(gray, mask=mask)
+    return to_grid(cat, LOGO_W, int(img.height * LOGO_W / img.width) // BAND * BAND)
 
 
 def band_path(grid, rows, left, top, lo, hi):
@@ -131,8 +137,8 @@ def build_svg(face, logo):
     pad = 24
     face_w, face_h = len(face[0]) * PITCH, len(face) * PITCH
     logo_w, logo_h = len(logo[0]) * PITCH, len(logo) * PITCH
-    face_x = round(CARD_W * 0.75 - face_w / 2)          # portrait on the right
-    logo_x = round(CARD_W * 0.25 - logo_w / 2)          # GitHub mark on the left, nothing in between
+    face_x = round(CARD_W * 0.25 - face_w / 2)          # portrait on the left
+    logo_x = round(CARD_W * 0.75 - logo_w / 2)          # Octocat on the right, nothing in between
     top = pad
     logo_y = round(top + face_h * 0.45 - logo_h / 2)
     name_y = round(top + face_h + 30)                   # name right under the portrait
@@ -160,21 +166,14 @@ def build_svg(face, logo):
     """
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {CARD_W} {height}" width="{CARD_W}" height="{height}" role="img">',
-        f"<title>The GitHub mark and {NAME}, drawn in dots</title>",
+        f"<title>{NAME} and the Octocat, drawn in dots</title>",
         f"<!-- you found a quiet corner: {flag} -->",
         f"<style>{css}</style>",
         f'<rect width="{CARD_W}" height="{height}" rx="14" fill="{CARD}"/>',
-        # The photo is cut off at the shoulders, so the portrait fades softly into the card there.
-        '<defs><radialGradient id="fade" cx=".5" cy=".38" r=".62" gradientUnits="objectBoundingBox">'
-        '<stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>'
-        f'<mask id="soft"><rect x="{face_x}" y="{top}" width="{face_w}" height="{face_h + PITCH * BAND}" '
-        'fill="url(#fade)"/></mask></defs>',
     ]
 
-    draw_dots(out, logo, logo_x, logo_y, rnd)
-    out.append('<g mask="url(#soft)">')
     draw_dots(out, face, face_x, top, rnd)
-    out.append("</g>")
+    draw_dots(out, logo, logo_x, logo_y, rnd)
 
     # The name: once the pictures settle, each letter flickers through random characters, then locks in.
     x0 = face_x + face_w / 2 - (len(NAME) - 1) * NAME_STEP / 2
@@ -196,5 +195,5 @@ def build_svg(face, logo):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/make_hero.py path/to/photo.png")
-    write_asset("hero.svg", build_svg(portrait_dots(sys.argv[1]), logo_dots()))
+    write_asset("hero.svg", build_svg(portrait_dots(sys.argv[1]), octocat_dots()))
     print("wrote assets/hero.svg")
