@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/hero.svg?v=6" alt="Flavien Mbishibishi, drawn in dots" width="100%">
+<img src="assets/hero.svg?v=7" alt="Flavien Mbishibishi, drawn in dots" width="100%">
 
 <img src="assets/strip.svg?v=2" alt="" width="100%">
 
