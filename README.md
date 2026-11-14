@@ -15,7 +15,7 @@ I design for scale and security from day one, and I build for the world, not jus
 | | |
 |---|---|
 | **Languages** | TypeScript · JavaScript · Python · Java · Dart · Go · C# · SQL / PL/SQL · PHP |
-| **AI & Data** | Machine learning (scikit-learn) · LLM integration (Gemini) · AI agents & MCP servers |
+| **AI & Data** | Machine learning (scikit-learn) · LLM integration · AI agents & MCP servers |
 | **Frontend** | React · Next.js · Vite · CesiumJS · HTML/CSS |
 | **Backend** | Node.js / Express · FastAPI · Spring Boot · GraphQL · RabbitMQ · REST APIs |
 | **Mobile** | Flutter · Firebase |
