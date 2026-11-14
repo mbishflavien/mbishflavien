@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/hero.svg" alt="Flavien Mbishibishi, drawn in dots" width="380">
+<img src="assets/hero.svg?v=3" alt="Flavien Mbishibishi, drawn in dots" width="100%">
 
-<img src="assets/strip.svg" alt="" width="100%">
+<img src="assets/strip.svg?v=2" alt="" width="100%">
 
 Software engineer from **Kigali, Rwanda**, building AI-driven products end to end:<br>
 the machine learning systems, the APIs that serve them, and the web and mobile apps people use every day.<br>
@@ -24,7 +24,7 @@ I design for scale and security from day one, and I build for the world, not jus
 | **Security** | Vulnerability assessment & penetration testing · Software testing (ISTQB) |
 | **Hardware** | ESP32 · Arduino · IoT |
 
-<img src="assets/strip.svg" alt="" width="100%">
+<img src="assets/strip.svg?v=2" alt="" width="100%">
 
 <!-- hills:start -->
 <img src="assets/hills.svg?v=1794686702" alt="Kigali · 22:04 · 17°C · partly cloudy" width="100%">

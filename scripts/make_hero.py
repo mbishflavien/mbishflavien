@@ -23,6 +23,7 @@ BAND = 4              # dot rows that appear together while the picture settles
 NAME_FONT, NAME_STEP = 28, 19
 NOISE = "abcdefghijkmnopqrstuvwxyz0123456789"
 NAME_NOISE = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%@$?"
+CARD_W = 1000         # the card spans the page; the portrait stays centred at its own size
 CYCLE = 14            # seconds for one full loop
 INK, CARD = PALETTE["cream"], PALETTE["navy"]
 # Each dot takes a colour from how light the photo is there, blending smoothly
@@ -112,11 +113,12 @@ def build_svg(grid):
     @keyframes flick{{0%{{opacity:1}}33%,100%{{opacity:0}}}}
     """
     out = [
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="img">',
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {CARD_W} {height}" width="{CARD_W}" height="{height}" role="img">',
         f"<title>{NAME}, drawn in dots</title>",
         f"<!-- you found a quiet corner: {flag} -->",
         f"<style>{css}</style>",
-        f'<rect width="{width}" height="{height}" rx="14" fill="{CARD}"/>',
+        f'<rect width="{CARD_W}" height="{height}" rx="14" fill="{CARD}"/>',
+        f'<g transform="translate({(CARD_W - width) / 2:.0f},0)">',
     ]
 
     # The name: each letter flickers through random characters, then locks in, one after another.
@@ -133,6 +135,13 @@ def build_svg(grid):
         first_name = " gold" if i > NAME.index(" ") else ""
         out.append(f'<text class="nm nr{first_name}" {delay} x="{x:.1f}" y="{name_y}" text-anchor="middle">{ch}</text>')
 
+    # The photo is cut off at the shoulders, so the portrait fades softly into the card there.
+    art_h = len(grid) * PITCH
+    out.append(
+        f'<defs><radialGradient id="fade" cx=".5" cy=".38" r=".62" gradientUnits="objectBoundingBox">'
+        '<stop offset=".72" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>'
+        f'<mask id="soft"><rect x="{pad}" y="{art_top}" width="{art_w}" height="{art_h + PITCH * BAND}" fill="url(#fade)"/></mask></defs>'
+        '<g mask="url(#soft)">')
     # The portrait: each band starts as scrambled letters, then settles into dots, top to bottom.
     for b, top_row in enumerate(range(0, len(grid), BAND)):
         rows = range(top_row, top_row + BAND)
@@ -155,7 +164,7 @@ def build_svg(grid):
                 out.append(f'<path stroke="{colour}" d="{d}"/>')
             lo = hi
         out.append("</g>")
-    out.append("</svg>")
+    out.append("</g></g></svg>")
     return "\n".join(out)
 
 
