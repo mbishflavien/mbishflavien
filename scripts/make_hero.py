@@ -9,9 +9,11 @@ smooth: a logo change only redraws its own half.
 
 Only needs to run once:  python scripts/make_hero.py path/to/photo.png
 The photo itself is not stored in the repo. The Octocat is scripts/octocat.png. The tool logos in
-scripts/logos/ come from Simple Icons (simpleicons.org, CC0), except bullmq.png.
+scripts/logos/ (and their brand colours in scripts/logos/colors.json) come from Simple Icons
+(simpleicons.org, CC0), except bullmq.png.
 """
 import base64
+import json
 import random
 import sys
 
@@ -79,6 +81,36 @@ def blend(t):
 
 TONES = [((i + 1) / STEPS if i < STEPS - 1 else 1.01, blend((i + 0.5) / STEPS)) for i in range(STEPS)]
 
+# Logos keep their real brand colours, softened towards this calm grey-blue so they sit quietly on the navy.
+MUTE, MUTE_BY = "#aeb3c2", 0.38
+COLORS = json.loads((ROOT / "scripts" / "logos" / "colors.json").read_text())
+
+
+def rgb(h):
+    return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
+
+
+def mix(a, b, k):
+    return "#" + "".join(f"{round(x + (y - x) * k):02x}" for x, y in zip(rgb(a), rgb(b)))
+
+
+def luminance(h):
+    r, g, b = rgb(h)
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+
+
+def soften(h):
+    """A brand colour made faint but still recognisable: blue stays blue, yellow stays yellow."""
+    c = mix(h, MUTE, MUTE_BY)
+    return c if luminance(c) > 0.4 else mix(c, "#d4d8e3", 0.45)   # dark colours lifted so they still show
+
+
+def tone_colour(t):
+    for hi, colour in TONES:
+        if t < hi:
+            return colour
+    return TONES[-1][1]
+
 
 # ---------- pictures to dots ----------
 
@@ -106,7 +138,8 @@ def portrait_dots(photo):
     gray = ImageEnhance.Contrast(gray).enhance(1.15)
     black = Image.new("L", img.size, 0)
     black.paste(gray, mask=mask)
-    return to_grid(black, FACE_W, int(img.height * FACE_W / img.width) // BAND * BAND)
+    grid = to_grid(black, FACE_W, int(img.height * FACE_W / img.width) // BAND * BAND)
+    return [[None if v is None else tone_colour(v) for v in row] for row in grid]
 
 
 def octocat_dots():
@@ -123,7 +156,12 @@ def octocat_dots():
     gray = ImageOps.grayscale(img).point(lambda v: int(255 * (0.3 + 0.7 * (v / 255) ** 1.6)))
     cat = Image.new("L", img.size, 0)
     cat.paste(gray, mask=mask)
-    return to_grid(cat, CAT_W, int(img.height * CAT_W / img.width) // BAND * BAND)
+    w, h = CAT_W, int(img.height * CAT_W / img.width) // BAND * BAND
+    grid = to_grid(cat, w, h)
+    # Each dot takes the cat's own colour there (black body, peach face, brown eyes, blue puddle), softened.
+    small = img.resize((w, h), Image.LANCZOS).quantize(colors=6).convert("RGB")
+    return [[None if v is None else soften("#%02x%02x%02x" % small.getpixel((x, y))) for x, v in enumerate(row)]
+            for y, row in enumerate(grid)]
 
 
 def logo_dots(name):
@@ -136,14 +174,23 @@ def logo_dots(name):
     cx, cy, far = w * 0.62, h * 0.35, ((w * 0.62) ** 2 + (h * 0.65) ** 2) ** 0.5
     glow = Image.new("L", (w, h))
     glow.putdata([int(255 * (1 - 0.45 * ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5 / far)) for y in range(h) for x in range(w)])
-    # Logos are flat shapes, so every dot inside them is lit, like an LED sign; only the colour varies.
-    return [[glow.getpixel((x, y)) / 255 if mask.getpixel((x, y)) else None for x in range(w)] for y in range(h)]
+    # Logos are flat shapes, so every dot inside them is lit, like an LED sign. Each dot is the logo's
+    # softened brand colour (or the cream blend for logos without one), a little dimmer away from the glow.
+    base = soften(COLORS[name]) if name in COLORS else None
+
+    def colour(t):
+        if base is None:
+            return tone_colour(t)
+        step = round((1 - t) / 0.45 * 3) / 3            # four shades are enough
+        return mix(base, CARD, step * 0.35)
+    return [[colour(glow.getpixel((x, y)) / 255) if mask.getpixel((x, y)) else None for x in range(w)]
+            for y in range(h)]
 
 
 # ---------- dots to SVG ----------
 
-def band_path(grid, rows, left, top, pitch, lo, hi):
-    """The dots of some rows whose tone is in [lo, hi), as one path.
+def band_path(grid, rows, left, top, pitch, colour):
+    """The dots of some rows that have this colour, as one path.
 
     Each run of neighbouring dots in a row is one line; with round caps and a dash pattern of
     "0 pitch" it is drawn as a row of dots, so a solid shape costs a few bytes per row, not per dot."""
@@ -151,9 +198,9 @@ def band_path(grid, rows, left, top, pitch, lo, hi):
     for y in rows:
         x = 0
         while x < len(grid[0]):
-            if grid[y][x] is not None and lo <= grid[y][x] < hi:
+            if grid[y][x] == colour:
                 start = x
-                while x + 1 < len(grid[0]) and grid[y][x + 1] is not None and lo <= grid[y][x + 1] < hi:
+                while x + 1 < len(grid[0]) and grid[y][x + 1] == colour:
                     x += 1
                 ax, ay = round(left + start * pitch, 2), round(top + y * pitch, 2)
                 move = f"M{ax:g} {ay:g}" if px is None else f"m{round(ax - px, 2):g} {round(ay - py, 2):g}"
@@ -166,13 +213,11 @@ def band_path(grid, rows, left, top, pitch, lo, hi):
 
 
 def dot_paths(grid, rows, left, top, pitch):
-    out, lo = [], 0
-    for hi, colour in TONES:
-        d = band_path(grid, rows, left + pitch / 2, top + pitch / 2, pitch, lo, hi)
-        if d:
-            out.append(f'<path stroke="{colour}" stroke-width="{pitch * 0.78:.2f}" '
-                       f'stroke-dasharray="0 {pitch:g}" d="{d}"/>')
-        lo = hi
+    out = []
+    for colour in sorted({grid[y][x] for y in rows for x in range(len(grid[0])) if grid[y][x] is not None}):
+        d = band_path(grid, rows, left + pitch / 2, top + pitch / 2, pitch, colour)
+        out.append(f'<path stroke="{colour}" stroke-width="{pitch * 0.78:.2f}" '
+                   f'stroke-dasharray="0 {pitch:g}" d="{d}"/>')
     return "".join(out)
 
 
