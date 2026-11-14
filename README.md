@@ -2,7 +2,7 @@
 
 <img src="assets/hero-tools.svg?v=10" alt="Tools I build with" width="50%"><img src="assets/hero-me.svg?v=10" alt="Flavien Mbishibishi, drawn in dots" width="50%">
 
-<img src="assets/strip.svg?v=2" alt="" width="100%">
+<img src="assets/strip.svg?v=3" alt="" width="100%">
 
 Software engineer from **Kigali, Rwanda**, building AI-driven products end to end:<br>
 the machine learning systems, the APIs that serve them, and the web and mobile apps people use every day.<br>
@@ -25,7 +25,7 @@ I design for scale and security from day one, and I build for the world, not jus
 | **Security** | Vulnerability assessment & penetration testing &nbsp;·&nbsp; Software testing (ISTQB) |
 | **Hardware** | <img src="assets/icons/espressif.svg" width="16" height="16" alt=""> ESP32 &nbsp;·&nbsp; <img src="assets/icons/arduino.svg" width="16" height="16" alt=""> Arduino &nbsp;·&nbsp; IoT |
 
-<img src="assets/strip.svg?v=2" alt="" width="100%">
+<img src="assets/strip-reverse.svg?v=1" alt="" width="100%">
 
 <!-- hills:start -->
 <img src="assets/hills.svg?v=1794695881" alt="Kigali · 00:38 · 16°C · mostly clear" width="100%">

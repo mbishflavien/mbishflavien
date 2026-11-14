@@ -66,14 +66,17 @@ def repeat_unit():
     return body, len(seq) * U
 
 
-def build():
+def build(direction=1):
+    """direction 1 scrolls left, -1 scrolls right; the README uses one of each, moving in opposite directions."""
     unit, span = repeat_unit()
     copies = W // span + 2
     row = "".join(f'<g transform="translate({k * span},0)">{unit}</g>' for k in range(copies))
     return "\n".join([
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img">',
         "<title>Imigongo pattern</title>",
-        f"<style>.roll{{animation:roll 22s linear infinite}}@keyframes roll{{to{{transform:translateX(-{span}px)}}}}</style>",
+        f"<style>.roll{{animation:roll 22s linear infinite}}"
+        f"@keyframes roll{{from{{transform:translateX({0 if direction == 1 else -span}px)}}"
+        f"to{{transform:translateX({-span if direction == 1 else 0}px)}}}}</style>",
         f'<defs><clipPath id="c"><rect width="{W}" height="{H}" rx="8"/></clipPath></defs>',
         '<g clip-path="url(#c)">',
         f'<rect width="{W}" height="{H}" fill="{BLACK}"/>',
@@ -82,5 +85,6 @@ def build():
 
 
 if __name__ == "__main__":
-    write_asset("strip.svg", build())
-    print("wrote assets/strip.svg")
+    write_asset("strip.svg", build(1))
+    write_asset("strip-reverse.svg", build(-1))
+    print("wrote assets/strip.svg and assets/strip-reverse.svg")
