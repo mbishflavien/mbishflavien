@@ -3,7 +3,7 @@
 Only needs to run once:  python scripts/make_strip.py
 """
 from common import write_asset
-from make_hero import THEMES
+THEMES = {"light": "#1f2328", "dark": "#e6edf3"}   # GitHub's own text colours
 
 W, H, U = 800, 30, 30      # canvas width, height, width of one motif
 TOP, BOT, MID = 4, 26, 15

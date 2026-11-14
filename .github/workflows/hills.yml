@@ -22,10 +22,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Draw Kigali right now and the stats card
-        run: |
-          python scripts/hills.py
-          python scripts/stats.py
+      - name: Draw Kigali right now
+        run: python scripts/hills.py
         env:
           GITHUB_TOKEN: ${{ github.token }}
 

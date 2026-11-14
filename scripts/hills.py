@@ -197,12 +197,7 @@ def main():
     activity = fetch_activity()
     svg, caption = build(now, temp, code, activity)
     write_asset("hills.svg", svg)
-    mood = "fireflies" if phase_of(now.hour) in ("night", "dusk") else "birds"
-    replace_block("hills", f"""
-<img src="assets/hills.svg?v={stamp()}" alt="{caption}" width="100%">
-
-<sub>The sky here follows the real time and weather in Kigali and updates every hour. The {mood} are the things I did on GitHub this month.</sub>
-""")
+    replace_block("hills", f'<img src="assets/hills.svg?v={stamp()}" alt="{caption}" width="100%">')
     print(caption, "| activity:", activity)
 
 
