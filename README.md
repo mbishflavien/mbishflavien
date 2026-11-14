@@ -14,7 +14,7 @@ This page is a small playground. Play a game, paint a tile, take a walk, or go l
 ### 🌄 Kigali right now
 
 <!-- hills:start -->
-<img src="assets/hills.svg?v=1794682213" alt="Kigali · 20:50 · 18°C · mostly clear" width="100%">
+<img src="assets/hills.svg?v=1794682414" alt="Kigali · 20:53 · 18°C · partly cloudy" width="100%">
 
 <sub>The sky here follows the real time and weather in Kigali and updates every hour. The fireflies are the things I did on GitHub this month.</sub>
 <!-- hills:end -->

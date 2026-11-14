@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="800" height="320" role="img">
-<title>Kigali right now: night, mostly clear</title>
+<title>Kigali right now: night, partly cloudy</title>
 <style>
     .cloud{animation:drift linear infinite}
     @keyframes drift{from{transform:translateX(-260px)}to{transform:translateX(1060px)}}
@@ -88,19 +88,19 @@
 <circle class="star" cx="697" cy="10" r="0.8" fill="#fff" style="animation-delay:-0.3s"/>
 <circle class="star" cx="630" cy="26" r="0.6" fill="#fff" style="animation-delay:-2.6s"/>
 <circle class="star" cx="459" cy="35" r="0.5" fill="#fff" style="animation-delay:-2.5s"/>
-<circle cx="221" cy="95" r="20" fill="#f4f1de"/><circle cx="229" cy="90" r="18" fill="#070b1f" opacity=".9"/>
+<circle cx="223" cy="94" r="20" fill="#f4f1de"/><circle cx="231" cy="89" r="18" fill="#070b1f" opacity=".9"/>
 <g class="cloud" style="animation-duration:142s;animation-delay:-35.19109504853306s"><g transform="translate(0,62.24102721402204) scale(1.3935009123280446)" fill="#3a4366" opacity="0.7"><ellipse cx="0" cy="0" rx="34" ry="13"/><ellipse cx="-18" cy="-8" rx="18" ry="12"/><ellipse cx="12" cy="-12" rx="22" ry="15"/></g></g>
+<g class="cloud" style="animation-duration:121s;animation-delay:-69.36839114006764s"><g transform="translate(0,33.41441507401315) scale(0.9705542038856847)" fill="#3a4366" opacity="0.7"><ellipse cx="0" cy="0" rx="34" ry="13"/><ellipse cx="-18" cy="-8" rx="18" ry="12"/><ellipse cx="12" cy="-12" rx="22" ry="15"/></g></g>
+<g class="cloud" style="animation-duration:126s;animation-delay:-53.42205687228782s"><g transform="translate(0,109.14784850824654) scale(0.912084095896506)" fill="#3a4366" opacity="0.7"><ellipse cx="0" cy="0" rx="34" ry="13"/><ellipse cx="-18" cy="-8" rx="18" ry="12"/><ellipse cx="12" cy="-12" rx="22" ry="15"/></g></g>
 <path d="M0,320 L0,149.0 L10,151.1 L20,152.8 L30,153.8 L40,153.9 L50,153.2 L60,151.7 L70,149.9 L80,148.2 L90,146.9 L100,146.3 L110,146.3 L120,146.9 L130,147.9 L140,148.7 L150,148.9 L160,148.2 L170,146.3 L180,143.1 L190,138.9 L200,133.8 L210,128.4 L220,123.1 L230,118.5 L240,114.9 L250,112.5 L260,111.2 L270,110.8 L280,111.0 L290,111.4 L300,111.6 L310,111.3 L320,110.6 L330,109.5 L340,108.3 L350,107.4 L360,107.2 L370,108.0 L380,110.1 L390,113.6 L400,118.2 L410,123.6 L420,129.3 L430,134.8 L440,139.6 L450,143.5 L460,146.2 L470,147.7 L480,148.5 L490,148.7 L500,148.9 L510,149.3 L520,150.3 L530,151.9 L540,154.1 L550,156.5 L560,158.8 L570,160.6 L580,161.5 L590,161.4 L600,160.2 L610,158.1 L620,155.5 L630,152.8 L640,150.5 L650,149.1 L660,148.9 L670,150.0 L680,152.2 L690,155.3 L700,159.0 L710,162.7 L720,166.0 L730,168.7 L740,170.6 L750,171.8 L760,172.6 L770,173.3 L780,174.3 L790,175.8 L800,178.2 L800,320 Z" fill="#25324d"/>
 <path d="M0,320 L0,218.6 L10,218.1 L20,216.2 L30,212.9 L40,208.5 L50,203.4 L60,198.1 L70,193.1 L80,188.8 L90,185.2 L100,182.5 L110,180.5 L120,178.8 L130,177.1 L140,175.0 L150,172.3 L160,169.0 L170,165.1 L180,160.9 L190,156.9 L200,153.5 L210,151.1 L220,150.0 L230,150.3 L240,151.9 L250,154.5 L260,157.7 L270,160.9 L280,163.7 L290,165.7 L300,166.8 L310,167.0 L320,166.4 L330,165.4 L340,164.4 L350,163.8 L360,163.8 L370,164.5 L380,165.8 L390,167.4 L400,169.0 L410,170.1 L420,170.4 L430,169.6 L440,167.6 L450,164.6 L460,161.0 L470,157.1 L480,153.5 L490,150.7 L500,149.0 L510,148.6 L520,149.4 L530,151.2 L540,153.6 L550,156.3 L560,158.8 L570,160.9 L580,162.4 L590,163.5 L600,164.3 L610,165.2 L620,166.7 L630,169.0 L640,172.3 L650,176.8 L660,182.2 L670,188.2 L680,194.2 L690,199.9 L700,204.6 L710,208.2 L720,210.4 L730,211.2 L740,211.1 L750,210.3 L760,209.2 L770,208.4 L780,207.9 L790,208.1 L800,208.8 L800,320 Z" fill="#1b2d33"/>
 <path d="M0,320 L0,206.7 L10,207.3 L20,207.0 L30,206.1 L40,205.0 L50,204.0 L60,203.5 L70,203.6 L80,204.5 L90,205.8 L100,207.3 L110,208.5 L120,209.1 L130,208.7 L140,207.1 L150,204.4 L160,200.9 L170,196.8 L180,192.7 L190,189.2 L200,186.5 L210,185.1 L220,184.9 L230,185.9 L240,187.7 L250,190.0 L260,192.3 L270,194.4 L280,195.9 L290,196.9 L300,197.5 L310,198.1 L320,198.9 L330,200.5 L340,203.0 L350,206.6 L360,211.4 L370,216.9 L380,222.8 L390,228.6 L400,233.8 L410,237.9 L420,240.8 L430,242.3 L440,242.6 L450,242.1 L460,241.1 L470,240.1 L480,239.5 L490,239.4 L500,239.8 L510,240.8 L520,241.8 L530,242.7 L540,243.0 L550,242.3 L560,240.7 L570,238.1 L580,234.8 L590,231.3 L600,227.9 L610,225.2 L620,223.6 L630,223.2 L640,224.1 L650,226.1 L660,228.9 L670,231.9 L680,234.7 L690,237.0 L700,238.5 L710,239.1 L720,239.0 L730,238.5 L740,237.9 L750,237.6 L760,238.0 L770,239.0 L780,240.7 L790,242.8 L800,244.9 L800,320 Z" fill="#142821"/>
-<circle class="light" cx="74" cy="214" r="1.6" fill="#ffd27a" style="animation-delay:-1.1s"/>
-<circle class="light" cx="56" cy="223" r="1.6" fill="#ffd27a" style="animation-delay:-0.8s"/>
-<circle class="light" cx="48" cy="210" r="1.6" fill="#ffd27a" style="animation-delay:-0.5s"/>
-<circle class="light" cx="713" cy="251" r="1.6" fill="#ffd27a" style="animation-delay:-1.4s"/>
-<circle class="light" cx="245" cy="205" r="1.6" fill="#ffd27a" style="animation-delay:-1.7s"/>
-<circle class="light" cx="614" cy="252" r="1.6" fill="#ffd27a" style="animation-delay:-2.0s"/>
-<circle class="light" cx="556" cy="269" r="1.6" fill="#ffd27a" style="animation-delay:-0.3s"/>
-<circle class="light" cx="603" cy="239" r="1.6" fill="#ffd27a" style="animation-delay:-1.0s"/>
+<circle class="light" cx="41" cy="212" r="1.6" fill="#ffd27a" style="animation-delay:-1.6s"/>
+<circle class="light" cx="467" cy="259" r="1.6" fill="#ffd27a" style="animation-delay:-1.2s"/>
+<circle class="light" cx="784" cy="270" r="1.6" fill="#ffd27a" style="animation-delay:-1.1s"/>
+<circle class="light" cx="560" cy="247" r="1.6" fill="#ffd27a" style="animation-delay:-0.1s"/>
+<circle class="light" cx="379" cy="229" r="1.6" fill="#ffd27a" style="animation-delay:-0.5s"/>
+<circle class="light" cx="520" cy="257" r="1.6" fill="#ffd27a" style="animation-delay:-0.1s"/>
 <circle class="light" cx="227" cy="200" r="1.6" fill="#ffd27a" style="animation-delay:-0.8s"/>
 <circle class="light" cx="262" cy="210" r="1.6" fill="#ffd27a" style="animation-delay:-0.9s"/>
 <circle class="light" cx="776" cy="251" r="1.6" fill="#ffd27a" style="animation-delay:-0.6s"/>
@@ -123,36 +123,38 @@
 <circle class="light" cx="387" cy="246" r="1.6" fill="#ffd27a" style="animation-delay:-0.7s"/>
 <circle class="light" cx="171" cy="224" r="1.6" fill="#ffd27a" style="animation-delay:-0.6s"/>
 <circle class="light" cx="767" cy="257" r="1.6" fill="#ffd27a" style="animation-delay:-2.3s"/>
+<circle class="light" cx="725" cy="257" r="1.6" fill="#ffd27a" style="animation-delay:-0.3s"/>
+<circle class="light" cx="38" cy="222" r="1.6" fill="#ffd27a" style="animation-delay:-0.1s"/>
 <path d="M0,320 L0,253.8 L10,255.3 L20,256.3 L30,256.7 L40,256.7 L50,256.6 L60,256.8 L70,257.7 L80,259.7 L90,262.7 L100,266.9 L110,271.8 L120,277.1 L130,282.3 L140,286.9 L150,290.4 L160,292.6 L170,293.5 L180,293.2 L190,292.0 L200,290.5 L210,288.9 L220,287.6 L230,286.9 L240,286.6 L250,286.8 L260,286.9 L270,286.7 L280,285.8 L290,283.9 L300,280.9 L310,276.9 L320,272.1 L330,267.1 L340,262.2 L350,258.1 L360,255.0 L370,253.2 L380,252.6 L390,253.2 L400,254.5 L410,256.2 L420,257.7 L430,258.7 L440,259.0 L450,258.6 L460,257.7 L470,256.5 L480,255.5 L490,254.9 L500,255.2 L510,256.3 L520,258.1 L530,260.5 L540,263.0 L550,265.1 L560,266.4 L570,266.5 L580,265.2 L590,262.6 L600,259.0 L610,254.6 L620,250.1 L630,245.9 L640,242.2 L650,239.5 L660,237.7 L670,236.6 L680,235.9 L690,235.3 L700,234.4 L710,233.0 L720,231.0 L730,228.4 L740,225.5 L750,222.7 L760,220.5 L770,219.3 L780,219.4 L790,220.9 L800,223.8 L800,320 Z" fill="#0e1d17"/>
-<circle class="ff" cx="447" cy="267" r="2" fill="#f9f871" style="animation-delay:-3.4s;animation-duration:5.0s"/>
-<circle class="ff" cx="270" cy="256" r="2" fill="#f9f871" style="animation-delay:-0.2s;animation-duration:6.4s"/>
-<circle class="ff" cx="503" cy="265" r="2" fill="#f9f871" style="animation-delay:-4.1s;animation-duration:8.3s"/>
-<circle class="ff" cx="32" cy="249" r="2" fill="#f9f871" style="animation-delay:-0.9s;animation-duration:7.0s"/>
-<circle class="ff" cx="238" cy="265" r="2" fill="#f9f871" style="animation-delay:-1.4s;animation-duration:5.9s"/>
-<circle class="ff" cx="52" cy="260" r="2" fill="#f9f871" style="animation-delay:-4.3s;animation-duration:5.9s"/>
-<circle class="ff" cx="626" cy="270" r="2" fill="#f9f871" style="animation-delay:-6.3s;animation-duration:8.0s"/>
-<circle class="ff" cx="114" cy="294" r="2" fill="#f9f871" style="animation-delay:-6.3s;animation-duration:8.2s"/>
-<circle class="ff" cx="417" cy="244" r="2" fill="#f9f871" style="animation-delay:-4.1s;animation-duration:5.6s"/>
-<circle class="ff" cx="636" cy="222" r="2" fill="#f9f871" style="animation-delay:-1.3s;animation-duration:6.5s"/>
-<circle class="ff" cx="360" cy="294" r="2" fill="#f9f871" style="animation-delay:-2.1s;animation-duration:5.5s"/>
-<circle class="ff" cx="85" cy="280" r="2" fill="#f9f871" style="animation-delay:-5.6s;animation-duration:5.2s"/>
-<circle class="ff" cx="616" cy="293" r="2" fill="#f9f871" style="animation-delay:-1.7s;animation-duration:6.6s"/>
-<circle class="ff" cx="406" cy="282" r="2" fill="#f9f871" style="animation-delay:-6.4s;animation-duration:7.2s"/>
-<circle class="ff" cx="202" cy="241" r="2" fill="#f9f871" style="animation-delay:-1.6s;animation-duration:7.6s"/>
-<circle class="ff" cx="128" cy="287" r="2" fill="#f9f871" style="animation-delay:-5.5s;animation-duration:8.7s"/>
-<circle class="ff" cx="297" cy="234" r="2" fill="#f9f871" style="animation-delay:-6.9s;animation-duration:8.8s"/>
-<circle class="ff" cx="545" cy="233" r="2" fill="#f9f871" style="animation-delay:-7.0s;animation-duration:6.4s"/>
-<circle class="ff" cx="372" cy="228" r="2" fill="#f9f871" style="animation-delay:-3.7s;animation-duration:9.0s"/>
-<circle class="ff" cx="724" cy="244" r="2" fill="#f9f871" style="animation-delay:-4.5s;animation-duration:5.3s"/>
-<circle class="ff" cx="359" cy="250" r="2" fill="#f9f871" style="animation-delay:-3.0s;animation-duration:5.3s"/>
-<circle class="ff" cx="778" cy="270" r="2" fill="#f9f871" style="animation-delay:-4.6s;animation-duration:7.2s"/>
-<circle class="ff" cx="114" cy="260" r="2" fill="#f9f871" style="animation-delay:-2.2s;animation-duration:5.2s"/>
-<circle class="ff" cx="67" cy="285" r="2" fill="#f9f871" style="animation-delay:-2.9s;animation-duration:6.3s"/>
-<circle class="ff" cx="480" cy="223" r="2" fill="#f9f871" style="animation-delay:-2.5s;animation-duration:8.8s"/>
-<circle class="ff" cx="638" cy="248" r="2" fill="#f9f871" style="animation-delay:-5.4s;animation-duration:9.0s"/>
-<circle class="ff" cx="318" cy="295" r="2" fill="#f9f871" style="animation-delay:-2.3s;animation-duration:6.3s"/>
-<circle class="ff" cx="488" cy="224" r="2" fill="#f9f871" style="animation-delay:-0.3s;animation-duration:5.8s"/>
-<circle class="ff" cx="118" cy="298" r="2" fill="#f9f871" style="animation-delay:-2.8s;animation-duration:8.0s"/>
-<circle class="ff" cx="284" cy="291" r="2" fill="#f9f871" style="animation-delay:-1.6s;animation-duration:8.7s"/>
-<rect x="14" y="280" width="262" height="26" rx="13" fill="#000" fill-opacity=".35"/><text x="26" y="298" font-size="13" fill="#fff">Kigali · 20:50 · 18°C · mostly clear</text>
+<circle class="ff" cx="285" cy="271" r="2" fill="#f9f871" style="animation-delay:-3.9s;animation-duration:7.4s"/>
+<circle class="ff" cx="648" cy="221" r="2" fill="#f9f871" style="animation-delay:-2.5s;animation-duration:5.5s"/>
+<circle class="ff" cx="404" cy="243" r="2" fill="#f9f871" style="animation-delay:-3.9s;animation-duration:5.8s"/>
+<circle class="ff" cx="199" cy="223" r="2" fill="#f9f871" style="animation-delay:-3.5s;animation-duration:7.5s"/>
+<circle class="ff" cx="192" cy="284" r="2" fill="#f9f871" style="animation-delay:-4.4s;animation-duration:8.6s"/>
+<circle class="ff" cx="595" cy="230" r="2" fill="#f9f871" style="animation-delay:-6.5s;animation-duration:8.6s"/>
+<circle class="ff" cx="635" cy="262" r="2" fill="#f9f871" style="animation-delay:-2.1s;animation-duration:7.3s"/>
+<circle class="ff" cx="135" cy="285" r="2" fill="#f9f871" style="animation-delay:-0.2s;animation-duration:5.7s"/>
+<circle class="ff" cx="302" cy="256" r="2" fill="#f9f871" style="animation-delay:-6.4s;animation-duration:6.2s"/>
+<circle class="ff" cx="110" cy="227" r="2" fill="#f9f871" style="animation-delay:-5.2s;animation-duration:8.2s"/>
+<circle class="ff" cx="52" cy="283" r="2" fill="#f9f871" style="animation-delay:-6.4s;animation-duration:6.0s"/>
+<circle class="ff" cx="330" cy="261" r="2" fill="#f9f871" style="animation-delay:-5.5s;animation-duration:8.7s"/>
+<circle class="ff" cx="436" cy="239" r="2" fill="#f9f871" style="animation-delay:-1.9s;animation-duration:5.9s"/>
+<circle class="ff" cx="510" cy="231" r="2" fill="#f9f871" style="animation-delay:-5.8s;animation-duration:8.1s"/>
+<circle class="ff" cx="721" cy="249" r="2" fill="#f9f871" style="animation-delay:-1.2s;animation-duration:8.9s"/>
+<circle class="ff" cx="740" cy="275" r="2" fill="#f9f871" style="animation-delay:-1.1s;animation-duration:9.0s"/>
+<circle class="ff" cx="277" cy="257" r="2" fill="#f9f871" style="animation-delay:-0.7s;animation-duration:7.1s"/>
+<circle class="ff" cx="771" cy="294" r="2" fill="#f9f871" style="animation-delay:-2.1s;animation-duration:7.6s"/>
+<circle class="ff" cx="78" cy="256" r="2" fill="#f9f871" style="animation-delay:-2.6s;animation-duration:6.7s"/>
+<circle class="ff" cx="84" cy="300" r="2" fill="#f9f871" style="animation-delay:-4.4s;animation-duration:7.6s"/>
+<circle class="ff" cx="432" cy="230" r="2" fill="#f9f871" style="animation-delay:-3.5s;animation-duration:6.2s"/>
+<circle class="ff" cx="50" cy="225" r="2" fill="#f9f871" style="animation-delay:-5.7s;animation-duration:6.7s"/>
+<circle class="ff" cx="274" cy="268" r="2" fill="#f9f871" style="animation-delay:-0.2s;animation-duration:6.4s"/>
+<circle class="ff" cx="733" cy="285" r="2" fill="#f9f871" style="animation-delay:-2.5s;animation-duration:8.1s"/>
+<circle class="ff" cx="778" cy="251" r="2" fill="#f9f871" style="animation-delay:-6.6s;animation-duration:6.3s"/>
+<circle class="ff" cx="264" cy="269" r="2" fill="#f9f871" style="animation-delay:-0.3s;animation-duration:5.2s"/>
+<circle class="ff" cx="167" cy="230" r="2" fill="#f9f871" style="animation-delay:-6.8s;animation-duration:6.6s"/>
+<circle class="ff" cx="589" cy="248" r="2" fill="#f9f871" style="animation-delay:-6.2s;animation-duration:5.9s"/>
+<circle class="ff" cx="722" cy="258" r="2" fill="#f9f871" style="animation-delay:-0.8s;animation-duration:5.5s"/>
+<circle class="ff" cx="663" cy="290" r="2" fill="#f9f871" style="animation-delay:-1.3s;animation-duration:6.5s"/>
+<rect x="14" y="280" width="268" height="26" rx="13" fill="#000" fill-opacity=".35"/><text x="26" y="298" font-size="13" fill="#fff">Kigali · 20:53 · 18°C · partly cloudy</text>
 </g></svg>
