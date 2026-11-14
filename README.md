@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/hero.svg?v=8" alt="Flavien Mbishibishi, drawn in dots" width="100%">
+<img src="assets/hero-tools.svg?v=9" alt="Tools I build with" width="50%"><img src="assets/hero-me.svg?v=9" alt="Flavien Mbishibishi, drawn in dots" width="50%">
 
 <img src="assets/strip.svg?v=2" alt="" width="100%">
 
@@ -14,13 +14,14 @@ I design for scale and security from day one, and I build for the world, not jus
 
 | | |
 |---|---|
-| **Languages** | TypeScript · JavaScript · Python · Java · Dart · Go · C# · SQL / PL/SQL · PHP |
+| **Languages** | TypeScript · JavaScript · Python · Go · Java · Dart · C# · PHP · SQL / PL/SQL |
 | **AI & Data** | Machine learning (scikit-learn) · LLM integration · AI agents & MCP servers |
-| **Frontend** | React · Next.js · Vite · CesiumJS · HTML/CSS |
-| **Backend** | Node.js / Express · FastAPI · Spring Boot · GraphQL · RabbitMQ · REST APIs |
+| **Frontend & UI/UX** | React · Next.js · Tailwind CSS · MUI · shadcn/ui · Figma · Vite · CesiumJS · HTML/CSS |
+| **Backend** | Node.js · Express · Django · FastAPI · Gin · Spring Boot · GraphQL · Socket.io · BullMQ · RabbitMQ · REST APIs |
 | **Mobile** | Flutter · Firebase |
-| **Databases** | MySQL · Oracle · Firestore |
-| **Cloud & DevOps** | Docker · GitHub Actions · Linux · Codespaces |
+| **Databases** | PostgreSQL · MySQL · MongoDB · Redis · Oracle (PL/SQL) · Firestore |
+| **Cloud & DevOps** | AWS · GCP · Docker · GitHub Actions · CI/CD · Git · Linux · Codespaces |
+| **Architecture** | System design |
 | **Security** | Vulnerability assessment & penetration testing · Software testing (ISTQB) |
 | **Hardware** | ESP32 · Arduino · IoT |
 

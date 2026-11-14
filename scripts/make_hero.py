@@ -1,12 +1,15 @@
-"""Builds assets/hero.svg: a night-blue banner with, on the left, the Octocat morphing every few seconds
-into the logos of tools I use, and on the right my portrait, with my name decoding under it.
-Everything is drawn in dots in the profile's colours.
+"""Builds the banner at the top of the profile, as two halves that sit edge to edge:
 
-The dots are real SVG shapes (not font characters), so the picture looks the same on every device.
+  assets/hero-tools.svg  the Octocat, then the logos of tools I use, crossfading every few seconds
+  assets/hero-me.svg     my portrait, settling out of scrambled letters, with my name under it
+
+Everything is drawn in dots in the profile's colours. The dots are real SVG shapes (not font
+characters), so the pictures look the same on every device. Two separate images keep the page
+smooth: a logo change only redraws its own half.
 
 Only needs to run once:  python scripts/make_hero.py path/to/photo.png
-The photo itself is not stored in the repo. The Octocat is scripts/octocat.png and the tool logos
-in scripts/logos/ come from Simple Icons (simpleicons.org, CC0).
+The photo itself is not stored in the repo. The Octocat is scripts/octocat.png. The tool logos in
+scripts/logos/ come from Simple Icons (simpleicons.org, CC0), except bullmq.png.
 """
 import base64
 import random
@@ -17,30 +20,35 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
 from common import PALETTE, ROOT, write_asset
 
 NAME = "MBISHIBISHI Flavien"
-# The left side shows these in turn: (image in scripts/logos/, label under it).
+# The left half shows these in turn: (image in scripts/logos/, label under it).
 LOGOS = [
     ("octocat", "GitHub"),
     # Languages
-    ("typescript", "TypeScript"), ("javascript", "JavaScript"), ("python", "Python"), ("openjdk", "Java"),
-    ("dart", "Dart"), ("go", "Go"), ("csharp", "C#"), ("php", "PHP"), ("oracle", "PL/SQL"),
+    ("typescript", "TypeScript"), ("javascript", "JavaScript"), ("python", "Python"), ("go", "Go"),
+    ("openjdk", "Java"), ("dart", "Dart"), ("csharp", "C#"), ("php", "PHP"),
     # AI & Data
-    ("scikitlearn", "scikit-learn"), ("modelcontextprotocol", "MCP"),
-    # Frontend
-    ("react", "React"), ("nextdotjs", "Next.js"), ("vite", "Vite"), ("cesium", "CesiumJS"),
+    ("scikitlearn", "Machine Learning"), ("modelcontextprotocol", "MCP"),
+    # Frontend & UI/UX
+    ("react", "React"), ("nextdotjs", "Next.js"), ("tailwindcss", "Tailwind CSS"), ("mui", "MUI"),
+    ("shadcnui", "shadcn/ui"), ("figma", "Figma"), ("vite", "Vite"), ("cesium", "CesiumJS"),
     ("html5", "HTML"), ("css3", "CSS"),
     # Backend
-    ("nodedotjs", "Node.js"), ("express", "Express"), ("fastapi", "FastAPI"), ("springboot", "Spring Boot"),
-    ("graphql", "GraphQL"), ("rabbitmq", "RabbitMQ"),
+    ("nodedotjs", "Node.js"), ("express", "Express"), ("django", "Django"), ("fastapi", "FastAPI"),
+    ("gin", "Gin"), ("springboot", "Spring Boot"), ("graphql", "GraphQL"), ("socketdotio", "Socket.io"),
+    ("bullmq", "BullMQ"), ("rabbitmq", "RabbitMQ"),
     # Mobile
     ("flutter", "Flutter"), ("firebase", "Firebase"),
     # Databases
-    ("mysql", "MySQL"),
+    ("postgresql", "PostgreSQL"), ("mysql", "MySQL"), ("mongodb", "MongoDB"), ("redis", "Redis"),
+    ("oracle", "Oracle PL/SQL"),
     # Cloud & DevOps
-    ("docker", "Docker"), ("githubactions", "GitHub Actions"), ("linux", "Linux"),
+    ("amazonwebservices", "AWS"), ("googlecloud", "GCP"), ("docker", "Docker"),
+    ("githubactions", "GitHub Actions"), ("git", "Git"), ("linux", "Linux"),
     # Hardware
     ("espressif", "ESP32"), ("arduino", "Arduino"),
 ]
 SLOT = 3              # seconds each logo stays
+FADE = 0.6            # seconds of crossfade between two logos
 FACE_W = 220          # dots across the portrait
 FACE_PITCH = 2        # distance between portrait dots
 CAT_W = 200           # dots across the Octocat (finer, it has small details)
@@ -51,7 +59,7 @@ BAND = 4              # dot rows that appear together while the portrait settles
 NAME_FONT, NAME_STEP = 28, 19
 NOISE = "abcdefghijkmnopqrstuvwxyz0123456789"
 NAME_NOISE = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%@$?"
-CARD_W = 1150         # the banner spans the page; the pictures keep their own size
+HALF_W = 575          # width of each half; side by side they span the page
 CYCLE = 14            # seconds for one loop of the portrait
 INK, CARD = PALETTE["cream"], PALETTE["navy"]
 # Each dot takes a colour from how light the picture is there, blending smoothly
@@ -168,56 +176,73 @@ def dot_paths(grid, rows, left, top, pitch):
     return "".join(out)
 
 
-def noise_lines(grid, left, top, pitch, rnd, cls):
-    """Scrambled letters in the shape of the picture: one letter per 2 x BAND dots."""
-    cols, out = len(grid[0]), []
-    for top_row in range(0, len(grid), BAND):
-        rows = range(top_row, min(top_row + BAND, len(grid)))
-        cells = [any(grid[y][x] is not None for y in rows for x in (c * 2, c * 2 + 1) if x < cols)
-                 for c in range((cols + 1) // 2)]
-        if any(cells):
-            out.append((top_row, cells))
-    size = 4 * pitch
-    res = []
-    for k in range(2):
-        lines = "".join(
-            f'<text x="{left}" y="{top + (r + BAND) * pitch}" textLength="{len(c) * 2 * pitch}" '
-            f'lengthAdjust="spacing">{"".join(rnd.choice(NOISE) if on else " " for on in c)}</text>'
-            for r, c in out)
-        res.append(f'<g class="{cls} n f f{k}" style="font-size:{size}px">{lines}</g>')
-    return res
+def crossfade_keyframes(name, start, end, total):
+    """Keyframes for something shown from `start` to `end` in a loop `total` seconds long,
+    fading in and out over FADE seconds centred on those moments (wrapping round the loop)."""
+    def opacity(t):
+        best = 0
+        for shift in (-total, 0, total):
+            s, e = start + shift, end + shift
+            if s - FADE / 2 <= t <= e + FADE / 2:
+                best = max(best, min(1, (t - (s - FADE / 2)) / FADE, ((e + FADE / 2) - t) / FADE))
+        return best
+    marks = {0.0, float(total)}
+    for shift in (-total, 0, total):
+        for m in (start - FADE / 2, start + FADE / 2, end - FADE / 2, end + FADE / 2):
+            if 0 <= m + shift <= total:
+                marks.add(m + shift)
+    frames = "".join(f"{t / total * 100:.3f}%{{opacity:{opacity(t):.2f}}}" for t in sorted(marks))
+    return f"@keyframes {name}{{{frames}}}"
 
 
-def windows_keyframes(name, windows, total, ramp=0.15):
-    """CSS keyframes that make something visible during each (start, end) window of a loop `total` seconds long."""
-    pts = []
-    for s, e in windows:
-        pts += [(s - ramp, 0), (s, 1), (e, 1), (e + ramp, 0)]
-    pts = sorted((min(max(t, 0), total) / total * 100, v) for t, v in pts)
-    start = 1 if any(s <= 0 < e for s, e in windows) else 0
-    end = 1 if any(s < total <= e for s, e in windows) else 0
-    frames = [(0, start)] + pts + [(100, end)]
-    return f"@keyframes {name}{{" + "".join(f"{p:.3f}%{{opacity:{v}}}" for p, v in frames) + "}"
+def card(width, height, rounded):
+    """The navy background, rounded only on its outer side so the two halves join seamlessly."""
+    r = 14
+    if rounded == "left":
+        d = f"M{r},0H{width}V{height}H{r}A{r},{r} 0 0 1 0,{height - r}V{r}A{r},{r} 0 0 1 {r},0Z"
+    else:
+        d = f"M0,0H{width - r}A{r},{r} 0 0 1 {width},{r}V{height - r}A{r},{r} 0 0 1 {width - r},{height}H0Z"
+    return f'<path d="{d}" style="fill:{CARD}"/>'
 
 
-def build_svg(face, logos):
-    rnd = random.Random(3)
+def layout(face):
     pad = 24
-    face_w, face_h = len(face[0]) * FACE_PITCH, len(face) * FACE_PITCH
-    face_x = round(CARD_W * 0.75 - face_w / 2)       # portrait on the right
-    top = pad
-    name_y = round(top + face_h + 30)                # name right under the portrait
-    height = name_y + pad
-    logo_cx = CARD_W * 0.25                          # logos on the left, nothing in between
-    logo_cy = top + face_h * 0.45
-    total = SLOT * len(logos)
-    flag = base64.b64encode(b"flag{murakaza_neza}").decode()
+    face_h = len(face) * FACE_PITCH
+    name_y = round(pad + face_h + 30)
+    return pad, face_h, name_y, name_y + pad
 
-    css = [f"""
+
+def tools_svg(logos, face):
+    pad, face_h, name_y, height = layout(face)
+    cx, cy = HALF_W / 2, pad + face_h * 0.45
+    total = SLOT * len(logos)
+    css, body = [f"text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:{INK}}}"
+                 ".lb{font-size:26px;font-weight:700;letter-spacing:.08em}"
+                 "path{fill:none;stroke-linecap:round}"], []
+    for i, (grid, pitch, label) in enumerate(logos):
+        css.append(crossfade_keyframes(f"l{i}", i * SLOT, (i + 1) * SLOT, total))
+        css.append(f".l{i}{{animation:l{i} {total}s linear infinite both}}")
+        w, h = len(grid[0]) * pitch, len(grid) * pitch
+        left, top = round(cx - w / 2), round(cy - h / 2)
+        body.append(f'<g class="l{i}">{dot_paths(grid, range(len(grid)), left, top, pitch)}'
+                    f'<text class="lb" x="{cx}" y="{name_y}" text-anchor="middle">{label}</text></g>')
+    return "\n".join([
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {HALF_W} {height}" width="{HALF_W}" height="{height}" role="img">',
+        "<title>Tools I build with, drawn in dots</title>",
+        f"<style>{''.join(css)}</style>",
+        card(HALF_W, height, "left"), *body, "</svg>"])
+
+
+def me_svg(face):
+    rnd = random.Random(3)
+    pad, face_h, name_y, height = layout(face)
+    face_w = len(face[0]) * FACE_PITCH
+    face_x = round(HALF_W / 2 - face_w / 2)
+    flag = base64.b64encode(b"flag{murakaza_neza}").decode()
+    css = f"""
     text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;fill:{INK}}}
-    .d{{font-size:8px}}
+    .d{{font-size:8px;fill-opacity:.45}}
     .nm{{font-size:{NAME_FONT}px;font-weight:700}}
-    .lb{{font-size:26px;font-weight:700;letter-spacing:.08em}}
     .n{{fill-opacity:.45}}
     path{{fill:none;stroke-linecap:round}}
     .gold{{fill:{PALETTE['gold']}}}
@@ -225,32 +250,13 @@ def build_svg(face, logos):
     .z{{animation:hide {CYCLE}s linear infinite both}}
     .nr{{animation:nshow {CYCLE}s linear infinite both}}
     .nz{{animation:nhide {CYCLE}s linear infinite both}}
-    .f{{opacity:0;animation:flick .45s steps(1) infinite}}
-    .f1{{animation-delay:.15s}} .f2{{animation-delay:.3s}}
     @keyframes show{{0%,14%{{opacity:0}}18%,86%{{opacity:1}}90%,100%{{opacity:0}}}}
     @keyframes hide{{0%,14%{{opacity:1}}18%,86%{{opacity:0}}90%,100%{{opacity:1}}}}
     @keyframes nshow{{0%,20%{{opacity:0}}20.5%,88%{{opacity:1}}88.5%,100%{{opacity:0}}}}
     @keyframes nhide{{0%,20%{{opacity:1}}20.5%,88%{{opacity:0}}88.5%,100%{{opacity:1}}}}
-    @keyframes flick{{0%{{opacity:1}}33%,100%{{opacity:0}}}}
-    """]
+    """
     body = []
-
-    # Left: each logo holds for SLOT seconds. At every change the old logo dissolves into
-    # scrambled letters, which settle into the next logo.
-    for i, (grid, pitch, label) in enumerate(logos):
-        t0 = i * SLOT
-        css.append(windows_keyframes(f"l{i}", [(t0 + 0.4, t0 + SLOT - 0.25)], total))
-        noise = [(t0 - 0.25, t0 + 0.4)] + ([(total - 0.25, total)] if t0 == 0 else [])
-        css.append(windows_keyframes(f"s{i}", noise, total))
-        css.append(f".l{i}{{animation:l{i} {total}s linear infinite both}}"
-                   f".s{i}{{animation:s{i} {total}s linear infinite both}}")
-        w, h = len(grid[0]) * pitch, len(grid) * pitch
-        left, gtop = round(logo_cx - w / 2), round(logo_cy - h / 2)
-        body.append(f'<g class="l{i}">{dot_paths(grid, range(len(grid)), left, gtop, pitch)}'
-                    f'<text class="lb" x="{logo_cx}" y="{name_y}" text-anchor="middle">{label}</text></g>')
-        body.append(f'<g class="s{i}">' + "".join(noise_lines(grid, left, gtop, pitch, rnd, "")) + "</g>")
-
-    # Right: the portrait, band by band, starts as scrambled letters and settles into dots.
+    # The portrait, band by band, starts as scrambled letters and settles into dots, top to bottom.
     cols = len(face[0])
     for b, top_row in enumerate(range(0, len(face), BAND)):
         rows = range(top_row, top_row + BAND)
@@ -258,41 +264,34 @@ def build_svg(face, logos):
         if not any(cells):
             continue
         delay = f'style="animation-delay:{b * 0.03:.2f}s"'
-        tl = f'x="{face_x}" y="{top + (top_row + BAND) * FACE_PITCH}" textLength="{face_w}" lengthAdjust="spacing"'
-        body.append(f'<g class="z" {delay}>')
-        for k in range(3):
-            body.append(f'<text class="d n f f{k}" {tl}>{"".join(rnd.choice(NOISE) if on else " " for on in cells)}</text>')
-        body.append("</g>")
-        body.append(f'<g class="r" {delay}>{dot_paths(face, rows, face_x, top, FACE_PITCH)}</g>')
-
-    # The name: once the portrait settles, each letter flickers through random characters, then locks in.
-    x0 = face_x + face_w / 2 - (len(NAME) - 1) * NAME_STEP / 2
+        noise = "".join(rnd.choice(NOISE) if on else " " for on in cells)
+        body.append(f'<text class="d z" {delay} x="{face_x}" y="{pad + (top_row + BAND) * FACE_PITCH}" '
+                    f'textLength="{face_w}" lengthAdjust="spacing">{noise}</text>')
+        body.append(f'<g class="r" {delay}>{dot_paths(face, rows, face_x, pad, FACE_PITCH)}</g>')
+    # The name: once the portrait settles, each letter turns from a random character into the real one.
+    x0 = HALF_W / 2 - (len(NAME) - 1) * NAME_STEP / 2
     for i, ch in enumerate(NAME):
         if ch == " ":
             continue
         x = x0 + i * NAME_STEP
         delay = f'style="animation-delay:{i * 0.09:.2f}s"'
-        body.append(f'<g class="nz" {delay}>')
-        for k in range(3):
-            body.append(f'<text class="nm n f f{k}" x="{x:.1f}" y="{name_y}" text-anchor="middle">{rnd.choice(NAME_NOISE)}</text>')
-        body.append("</g>")
         first_name = " gold" if i > NAME.index(" ") else ""
+        body.append(f'<text class="nm n nz" {delay} x="{x:.1f}" y="{name_y}" text-anchor="middle">{rnd.choice(NAME_NOISE)}</text>')
         body.append(f'<text class="nm nr{first_name}" {delay} x="{x:.1f}" y="{name_y}" text-anchor="middle">{ch}</text>')
-
     return "\n".join([
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {CARD_W} {height}" width="{CARD_W}" height="{height}" role="img">',
-        f"<title>{NAME}, and the tools I build with, drawn in dots</title>",
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {HALF_W} {height}" width="{HALF_W}" height="{height}" role="img">',
+        f"<title>{NAME}, drawn in dots</title>",
         f"<!-- you found a quiet corner: {flag} -->",
-        f"<style>{''.join(css)}</style>",
-        f'<rect width="{CARD_W}" height="{height}" rx="14" fill="{CARD}"/>',
-        *body,
-        "</svg>"])
+        f"<style>{css}</style>",
+        card(HALF_W, height, "right"), *body, "</svg>"])
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/make_hero.py path/to/photo.png")
+    face = portrait_dots(sys.argv[1])
     logos = [(octocat_dots(), CAT_PITCH, "GitHub")]
     logos += [(logo_dots(name), LOGO_PITCH, label) for name, label in LOGOS[1:]]
-    write_asset("hero.svg", build_svg(portrait_dots(sys.argv[1]), logos))
-    print("wrote assets/hero.svg")
+    write_asset("hero-tools.svg", tools_svg(logos, face))
+    write_asset("hero-me.svg", me_svg(face))
+    print("wrote assets/hero-tools.svg and assets/hero-me.svg")
