@@ -23,7 +23,7 @@ BAND = 4              # dot rows that appear together while the picture settles
 NAME_FONT, NAME_STEP = 28, 19
 NOISE = "abcdefghijkmnopqrstuvwxyz0123456789"
 NAME_NOISE = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%@$?"
-CARD_W = 1000         # the card spans the page; the portrait stays centred at its own size
+CARD_W = 1150         # the card spans the page; the portrait stays centred at its own size
 CYCLE = 14            # seconds for one full loop
 INK, CARD = PALETTE["cream"], PALETTE["navy"]
 # Each dot takes a colour from how light the photo is there, blending smoothly

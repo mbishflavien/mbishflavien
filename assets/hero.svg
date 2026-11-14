@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 576" width="1000" height="576" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 576" width="1150" height="576" role="img">
 <title>MBISHIBISHI Flavien, drawn in dots</title>
 <!-- you found a quiet corner: ZmxhZ3ttdXJha2F6YV9uZXphfQ== -->
 <style>
@@ -20,8 +20,8 @@
     @keyframes nhide{0%,4%{opacity:1}4.5%,88%{opacity:0}88.5%,100%{opacity:1}}
     @keyframes flick{0%{opacity:1}33%,100%{opacity:0}}
     </style>
-<rect width="1000" height="576" rx="14" fill="#0b1026"/>
-<g transform="translate(262,0)">
+<rect width="1150" height="576" rx="14" fill="#0b1026"/>
+<g transform="translate(337,0)">
 <g class="nz" style="animation-delay:0.00s">
 <text class="nm n f f0" x="67.0" y="50" text-anchor="middle">R</text>
 <text class="nm n f f1" x="67.0" y="50" text-anchor="middle">$</text>
