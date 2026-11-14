@@ -1,15 +1,18 @@
 """Draws assets/strip.svg: a slowly scrolling Imigongo band.
 
-Imigongo panels are black, white and red ochre, with sharp geometric relief:
+Imigongo panels are black, white and red ochre (here on the profile's night blue, with a touch of sky, hill green and gold), with sharp geometric relief:
 nested diamonds, chevrons, hourglasses and zigzags. One band works on both
 light and dark GitHub, like the black card of the portrait.
 
 Only needs to run once:  python scripts/make_strip.py
 """
-from common import write_asset
+from common import PALETTE, write_asset
 
 W, H, U = 800, 44, 44        # canvas width, height, width of one motif
-BLACK, WHITE, OCHRE, CLAY = "#0b0b0b", "#f4efe6", "#b4442a", "#7a2e1d"
+P = PALETTE
+BLACK, WHITE, OCHRE = P["navy"], P["cream"], P["ochre"]
+GREEN = P["green"]
+CLAY = "#2b3d70"             # one step lighter than the night blue, for the sawtooth edges
 C = U / 2                     # centre of a motif
 TOP, BOT = 7, H - 7           # inner edges of the borders
 
@@ -24,7 +27,7 @@ def nested_diamond(a, b):
 
 def chevrons(right=True):
     o = []
-    for k, col in enumerate([WHITE, OCHRE, WHITE]):
+    for k, col in enumerate([WHITE, P["sky"], WHITE]):
         x = 8 + k * 9
         tip = x + 9 if right else x
         back = x if right else x + 9
@@ -36,8 +39,8 @@ def chevrons(right=True):
 def hourglass():
     return (f'<polygon points="5,{TOP + 1} {U - 5},{TOP + 1} {C},{H / 2}" fill="{WHITE}"/>'
             f'<polygon points="5,{BOT - 1} {U - 5},{BOT - 1} {C},{H / 2}" fill="{WHITE}"/>'
-            f'<polygon points="13,{TOP + 5} {U - 13},{TOP + 5} {C},{H / 2 - 5}" fill="{OCHRE}"/>'
-            f'<polygon points="13,{BOT - 5} {U - 13},{BOT - 5} {C},{H / 2 + 5}" fill="{OCHRE}"/>')
+            f'<polygon points="13,{TOP + 5} {U - 13},{TOP + 5} {C},{H / 2 - 5}" fill="{GREEN}"/>'
+            f'<polygon points="13,{BOT - 5} {U - 13},{BOT - 5} {C},{H / 2 + 5}" fill="{GREEN}"/>')
 
 
 def zigzags():
@@ -58,7 +61,7 @@ def teeth():
 
 def repeat_unit():
     seq = [nested_diamond(WHITE, OCHRE), chevrons(True), hourglass(), zigzags(),
-           nested_diamond(OCHRE, WHITE), chevrons(False), hourglass(), zigzags()]
+           nested_diamond(OCHRE, P["gold"]), chevrons(False), hourglass(), zigzags()]
     body = "".join(f'<g transform="translate({i * U},0)">{teeth()}{m}</g>' for i, m in enumerate(seq))
     return body, len(seq) * U
 

@@ -9,16 +9,18 @@ import os
 import random
 import urllib.request
 
-from common import USER, replace_block, stamp, write_asset
+from common import PALETTE, USER, replace_block, stamp, write_asset
 
 KIGALI = datetime.timezone(datetime.timedelta(hours=2))
 W, H = 800, 320
 
+P = PALETTE
+GOLD, CREAM, OCHRE, NAVY, SKY = P["gold"], P["cream"], P["ochre"], P["navy"], P["sky"]
 PHASES = {
-    "night": dict(sky=("#070b1f", "#1c2552"), hills=("#25324d", "#1b2d33", "#142821", "#0e1d17"), word="night"),
-    "dawn": dict(sky=("#43407a", "#f4a96b"), hills=("#8c7a9e", "#5f6f6a", "#3f5f3f", "#2c4a2c"), word="sunrise"),
-    "day": dict(sky=("#5aa9e6", "#d6eefa"), hills=("#a7cba0", "#77b25c", "#559845", "#3b7b31"), word="day"),
-    "dusk": dict(sky=("#2e2557", "#f0864a"), hills=("#6b5a7e", "#4e5d55", "#344d34", "#243b24"), word="sunset"),
+    "night": dict(sky=(P["navy"], P["blue"]), hills=("#26355f", "#1d3346", "#172b2a", "#10211c"), word="night"),
+    "dawn": dict(sky=(P["blue"], "#e9a46a"), hills=("#7f7a98", "#5b7165", "#41663f", "#2f5232"), word="sunrise"),
+    "day": dict(sky=("#6f9fd0", "#d7e6f1"), hills=("#a9c7a0", "#80b06a", P["green"], "#3f7a3c"), word="day"),
+    "dusk": dict(sky=(P["blue"], "#d9875a"), hills=("#5f5a7e", "#495e5a", "#35503a", "#25402b"), word="sunset"),
 }
 
 WEATHER = [(0, "clear"), (1, "mostly clear"), (2, "partly cloudy"), (3, "cloudy"), (45, "foggy"),
@@ -116,7 +118,7 @@ def build(now, temp, code, activity):
          f"<style>{css}</style>",
          '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">'
          f'<stop offset="0" stop-color="{pal["sky"][0]}"/><stop offset="1" stop-color="{pal["sky"][1]}"/>'
-         '</linearGradient><clipPath id="frame"><rect width="800" height="320" rx="16"/></clipPath></defs>',
+         '</linearGradient><clipPath id="frame"><rect width="800" height="320" rx="14"/></clipPath></defs>',
          '<g clip-path="url(#frame)">',
          f'<rect width="{W}" height="{H}" fill="url(#sky)"/>']
 
@@ -127,21 +129,21 @@ def build(now, temp, code, activity):
     if dark:
         for _ in range(70):
             o.append(f'<circle class="star" cx="{rnd.uniform(0, W):.0f}" cy="{rnd.uniform(0, 170):.0f}" '
-                     f'r="{rnd.uniform(.5, 1.6):.1f}" fill="#fff" style="animation-delay:-{rnd.uniform(0, 3):.1f}s"/>')
+                     f'r="{rnd.uniform(.5, 1.6):.1f}" fill="{CREAM}" style="animation-delay:-{rnd.uniform(0, 3):.1f}s"/>')
         t = ((hour - 18) % 24) / 12
         mx, my = 60 + t * 680, 210 - math.sin(math.pi * t) * 170
-        o.append(f'<circle cx="{mx:.0f}" cy="{my:.0f}" r="20" fill="#f4f1de"/>'
+        o.append(f'<circle cx="{mx:.0f}" cy="{my:.0f}" r="20" fill="{CREAM}"/>'
                  f'<circle cx="{mx + 8:.0f}" cy="{my - 5:.0f}" r="18" fill="{pal["sky"][0]}" opacity=".9"/>')
     else:
         t = min(max((hour - 6) / 12, 0), 1)
         sx, sy = 60 + t * 680, 230 - math.sin(math.pi * t) * 190
-        o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="44" fill="#ffd27a" opacity=".25"/>'
-                 f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="24" fill="#ffd27a"/>')
+        o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="44" fill="{GOLD}" opacity=".25"/>'
+                 f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="24" fill="{GOLD}"/>')
 
     n_clouds = CLOUDS.get(code, 6)
-    cfill, cop = ("#3a4366", .7) if dark else ("#ffffff", .85 if code < 3 else .95)
+    cfill, cop = ("#2b3d70", .7) if dark else (P["cream"], .9 if code < 3 else .95)
     if code >= 3:
-        cfill = "#59617a" if dark else "#c9d1da"
+        cfill = "#3a4a78" if dark else "#c9d3e0"
     for i in range(n_clouds):
         o.append(cloud(0, rnd.uniform(30, 110), rnd.uniform(.8, 1.6), cfill, cop,
                        rnd.randint(90, 150), rnd.uniform(0, 150)))
@@ -155,38 +157,38 @@ def build(now, temp, code, activity):
                 x += rnd.uniform(-5, 5)
                 y += rnd.uniform(6, 30)
                 if dark:
-                    o.append(f'<circle class="light" cx="{x:.0f}" cy="{y:.0f}" r="1.6" fill="#ffd27a" '
+                    o.append(f'<circle class="light" cx="{x:.0f}" cy="{y:.0f}" r="1.6" fill="{GOLD}" '
                              f'style="animation-delay:-{rnd.uniform(0, 2.4):.1f}s"/>')
                 else:
                     o.append(f'<g transform="translate({x:.0f},{y:.0f})"><rect x="-3" y="-2" width="6" height="4" '
-                             f'fill="#efe6d4"/><path d="M-4,-2 L0,-5 L4,-2Z" fill="#a8452b"/></g>')
+                             f'fill="{CREAM}"/><path d="M-4,-2 L0,-5 L4,-2Z" fill="{OCHRE}"/></g>')
 
     critters = min(max(activity, 3), 30)
     if ph in ("night", "dusk"):
         for _ in range(critters):
             o.append(f'<circle class="ff" cx="{rnd.uniform(20, 780):.0f}" cy="{rnd.uniform(220, 300):.0f}" r="2" '
-                     f'fill="#f9f871" style="animation-delay:-{rnd.uniform(0, 7):.1f}s;'
+                     f'fill="{GOLD}" style="animation-delay:-{rnd.uniform(0, 7):.1f}s;'
                      f'animation-duration:{rnd.uniform(5, 9):.1f}s"/>')
     else:
         for _ in range(min(critters, 12)):
             y, s = rnd.uniform(40, 140), rnd.uniform(.6, 1.1)
             o.append(f'<g class="bird" style="animation-duration:{rnd.randint(25, 45)}s;'
                      f'animation-delay:-{rnd.uniform(0, 45):.0f}s"><path transform="translate(0,{y:.0f}) scale({s:.2f})" '
-                     'd="M-8,0 Q-4,-5 0,0 Q4,-5 8,0" fill="none" stroke="#2b2b2b" stroke-width="1.6"/></g>')
+                     'd="M-8,0 Q-4,-5 0,0 Q4,-5 8,0" fill="none" stroke="{NAVY}" stroke-width="1.6"/></g>')
 
     if 45 <= code < 51:
         o.append(f'<rect y="150" width="{W}" height="170" fill="#ffffff" opacity=".35"/>')
     if code >= 51:
         for _ in range(90):
             x = rnd.randint(0, 820)
-            o.append(f'<line class="drop" x1="{x}" y1="0" x2="{x - 3}" y2="12" stroke="#cfe3ff" '
+            o.append(f'<line class="drop" x1="{x}" y1="0" x2="{x - 3}" y2="12" stroke="{SKY}" '
                      f'stroke-opacity=".6" style="animation-delay:-{rnd.uniform(0, .7):.2f}s"/>')
 
     temp_txt = f" · {temp}°C" if temp is not None else ""
     caption = f"Kigali · {now:%H:%M}{temp_txt} · {word}"
     o.append(f'<rect x="14" y="{H - 40}" width="{len(caption) * 6.6 + 24:.0f}" height="26" rx="13" '
-             'fill="#000" fill-opacity=".35"/>'
-             f'<text x="26" y="{H - 22}" font-size="13" fill="#fff">{caption}</text>')
+             'fill="{NAVY}" fill-opacity=".55"/>'
+             f'<text x="26" y="{H - 22}" font-size="13" fill="{CREAM}">{caption}</text>')
     o.append("</g></svg>")
     return "\n".join(o), caption
 

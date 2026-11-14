@@ -44,3 +44,16 @@ def replace_block(name, content):
     i = text.index(start) + len(start)
     j = text.index(end)
     path.write_text(text[:i] + "\n" + content.strip() + "\n" + text[j:], encoding="utf-8")
+
+
+# One palette for every picture on the profile, taken from Kigali itself:
+# the night sky, the day sky, the hills, Imigongo clay and the evening sun.
+PALETTE = {
+    "navy": "#0b1026",    # night sky, the cards' background
+    "blue": "#1c2a52",    # deep evening blue
+    "sky": "#7fa7d4",     # soft day sky
+    "green": "#5f9a52",   # the hills
+    "cream": "#efe6d6",   # Imigongo white, house walls
+    "ochre": "#c0573a",   # Imigongo red, roofs
+    "gold": "#e8b85c",    # sun, lights, fireflies
+}

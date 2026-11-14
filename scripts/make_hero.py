@@ -1,4 +1,4 @@
-"""Turns a portrait photo into assets/hero.svg: a white dot portrait on a black card,
+"""Turns a portrait photo into assets/hero.svg: a dot portrait in the profile's colours on a night-blue card,
 with my name decoding out of random letters above it.
 
 The dots are drawn as real SVG shapes (not font characters), so the picture looks
@@ -13,7 +13,7 @@ import sys
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from common import write_asset
+from common import PALETTE, write_asset
 
 NAME = "MBISHIBISHI Flavien"
 DOTS_W = 220          # dots across
@@ -24,11 +24,27 @@ NAME_FONT, NAME_STEP = 28, 19
 NOISE = "abcdefghijkmnopqrstuvwxyz0123456789"
 NAME_NOISE = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%@$?"
 CYCLE = 14            # seconds for one full loop
-INK, CARD = "#ffffff", "#000000"
+INK, CARD = PALETTE["cream"], PALETTE["navy"]
+# Each dot takes a colour from how light the photo is there, blending smoothly
+# from sky blue in the shadows, through cream, to a pale gold on the brightest highlights.
+STOPS = [(0.0, PALETTE["sky"]), (0.55, PALETTE["cream"]), (0.9, PALETTE["cream"]), (1.0, "#f3d79c")]
+STEPS = 8
+
+
+def blend(t):
+    for (t0, c0), (t1, c1) in zip(STOPS, STOPS[1:]):
+        if t <= t1:
+            k = (t - t0) / (t1 - t0)
+            a, b = (int(c0[i:i + 2], 16) for i in (1, 3, 5)), (int(c1[i:i + 2], 16) for i in (1, 3, 5))
+            return "#" + "".join(f"{round(x + (y - x) * k):02x}" for x, y in zip(a, b))
+    return STOPS[-1][1]
+
+
+TONES = [((i + 1) / STEPS if i < STEPS - 1 else 1.01, blend((i + 0.5) / STEPS)) for i in range(STEPS)]
 
 
 def portrait_dots(photo):
-    """Dithers the photo into a grid of dots: True wherever the photo is light."""
+    """Dithers the photo into dots (wherever the photo is light) and remembers the tone around each dot."""
     img = Image.open(photo).convert("RGBA")
     alpha = img.getchannel("A").point(lambda a: 255 if a > 128 else 0)
     img = img.crop(alpha.getbbox())
@@ -45,16 +61,20 @@ def portrait_dots(photo):
     black.paste(gray, mask=mask)
 
     h = int(img.height * DOTS_W / img.width) // BAND * BAND
-    dots = black.resize((DOTS_W, h), Image.LANCZOS).convert("1")   # Floyd-Steinberg dithering
-    return [[bool(dots.getpixel((x, y))) for x in range(DOTS_W)] for y in range(h)]
+    small = black.resize((DOTS_W, h), Image.LANCZOS)
+    dots = small.convert("1")   # Floyd-Steinberg dithering
+    soft = small.filter(ImageFilter.GaussianBlur(1.5))
+    # Each cell is None (no dot) or the tone around the dot (0 to 1), which picks its colour.
+    return [[soft.getpixel((x, y)) / 255 if dots.getpixel((x, y)) else None for x in range(DOTS_W)]
+            for y in range(h)]
 
 
-def band_path(grid, rows, left, top):
-    """All dots of a few rows as one path: each dot is a zero-length line with a round cap."""
+def band_path(grid, rows, left, top, lo, hi):
+    """The dots of a few rows whose tone is in [lo, hi), as one path: each dot is a zero-length line with a round cap."""
     d, px, py = [], None, None
     for y in rows:
         for x in range(DOTS_W):
-            if grid[y][x]:
+            if grid[y][x] is not None and lo <= grid[y][x] < hi:
                 ax, ay = left + x * PITCH, top + y * PITCH
                 d.append(f"M{ax} {ay}h0" if px is None else f"m{ax - px} {ay - py}h0")
                 px, py = ax, ay
@@ -77,7 +97,8 @@ def build_svg(grid):
     .d{{font-size:8px}}
     .nm{{font-size:{NAME_FONT}px;font-weight:700}}
     .n{{fill-opacity:.45}}
-    path{{fill:none;stroke:{INK};stroke-width:{DOT};stroke-linecap:round}}
+    path{{fill:none;stroke-width:{DOT};stroke-linecap:round}}
+    .gold{{fill:{PALETTE['gold']}}}
     .r{{animation:show {CYCLE}s linear infinite both}}
     .z{{animation:hide {CYCLE}s linear infinite both}}
     .nr{{animation:nshow {CYCLE}s linear infinite both}}
@@ -109,12 +130,13 @@ def build_svg(grid):
         for k in range(3):
             out.append(f'<text class="nm n f f{k}" x="{x:.1f}" y="{name_y}" text-anchor="middle">{rnd.choice(NAME_NOISE)}</text>')
         out.append("</g>")
-        out.append(f'<text class="nm nr" {delay} x="{x:.1f}" y="{name_y}" text-anchor="middle">{ch}</text>')
+        first_name = " gold" if i > NAME.index(" ") else ""
+        out.append(f'<text class="nm nr{first_name}" {delay} x="{x:.1f}" y="{name_y}" text-anchor="middle">{ch}</text>')
 
     # The portrait: each band starts as scrambled letters, then settles into dots, top to bottom.
     for b, top_row in enumerate(range(0, len(grid), BAND)):
         rows = range(top_row, top_row + BAND)
-        cells = [any(grid[y][x] for y in rows for x in (c * 2, c * 2 + 1)) for c in range(DOTS_W // 2)]
+        cells = [any(grid[y][x] is not None for y in rows for x in (c * 2, c * 2 + 1)) for c in range(DOTS_W // 2)]
         if not any(cells):
             continue
         delay = f'style="animation-delay:{b * 0.03:.2f}s"'
@@ -125,7 +147,14 @@ def build_svg(grid):
             noise = "".join(rnd.choice(NOISE) if on else " " for on in cells)
             out.append(f'<text class="d n f f{k}" {tl}>{noise}</text>')
         out.append("</g>")
-        out.append(f'<path class="r" {delay} d="{band_path(grid, rows, pad + PITCH / 2, art_top + PITCH / 2)}"/>')
+        out.append(f'<g class="r" {delay}>')
+        lo = 0
+        for hi, colour in TONES:
+            d = band_path(grid, rows, pad + PITCH / 2, art_top + PITCH / 2, lo, hi)
+            if d:
+                out.append(f'<path stroke="{colour}" d="{d}"/>')
+            lo = hi
+        out.append("</g>")
     out.append("</svg>")
     return "\n".join(out)
 
