@@ -1,56 +1,60 @@
 {
  "board": [
   [
-   2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2
+   1,
+   4,
+   0,
+   1,
+   1,
+   5,
+   0,
+   3
+  ],
+  [
+   4,
+   4,
+   3,
+   4,
+   5,
+   7,
+   1,
+   3
   ],
   [
    2,
+   0,
+   0,
    2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2
+   3,
+   0,
+   0,
+   4
   ],
   [
    2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2
-  ],
-  [
-   2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2,
-   2
+   0,
+   0,
+   1,
+   4,
+   0,
+   0,
+   0
   ]
  ],
  "game": 1,
- "moves": 0,
+ "moves": 1,
  "score": {
   "internet": 0,
   "bot": 0
  },
  "last": {
-  "you": null,
-  "ai": null
+  "you": 0,
+  "ai": 11
  },
- "log": [],
- "players": {}
+ "log": [
+  "@mbishflavien played pit 1, captured 8; the bot answered, captured 22"
+ ],
+ "players": {
+  "mbishflavien": 1
+ }
 }
