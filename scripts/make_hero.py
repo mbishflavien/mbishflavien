@@ -18,9 +18,28 @@ from common import PALETTE, ROOT, write_asset
 
 NAME = "MBISHIBISHI Flavien"
 # The left side shows these in turn: (image in scripts/logos/, label under it).
-LOGOS = [("octocat", "GitHub"), ("typescript", "TypeScript"), ("python", "Python"), ("react", "React"),
-         ("nodedotjs", "Node.js"), ("fastapi", "FastAPI"), ("springboot", "Spring Boot"),
-         ("flutter", "Flutter"), ("docker", "Docker"), ("linux", "Linux")]
+LOGOS = [
+    ("octocat", "GitHub"),
+    # Languages
+    ("typescript", "TypeScript"), ("javascript", "JavaScript"), ("python", "Python"), ("openjdk", "Java"),
+    ("dart", "Dart"), ("go", "Go"), ("csharp", "C#"), ("php", "PHP"), ("oracle", "PL/SQL"),
+    # AI & Data
+    ("scikitlearn", "scikit-learn"), ("modelcontextprotocol", "MCP"),
+    # Frontend
+    ("react", "React"), ("nextdotjs", "Next.js"), ("vite", "Vite"), ("cesium", "CesiumJS"),
+    ("html5", "HTML"), ("css3", "CSS"),
+    # Backend
+    ("nodedotjs", "Node.js"), ("express", "Express"), ("fastapi", "FastAPI"), ("springboot", "Spring Boot"),
+    ("graphql", "GraphQL"), ("rabbitmq", "RabbitMQ"),
+    # Mobile
+    ("flutter", "Flutter"), ("firebase", "Firebase"),
+    # Databases
+    ("mysql", "MySQL"),
+    # Cloud & DevOps
+    ("docker", "Docker"), ("githubactions", "GitHub Actions"), ("linux", "Linux"),
+    # Hardware
+    ("espressif", "ESP32"), ("arduino", "Arduino"),
+]
 SLOT = 3              # seconds each logo stays
 FACE_W = 220          # dots across the portrait
 FACE_PITCH = 2        # distance between portrait dots
@@ -100,7 +119,7 @@ def octocat_dots():
 
 
 def logo_dots(name):
-    """A white-on-black tool logo, fitted into a square, with a soft glow so the dots get the palette's blend."""
+    """A white-on-black tool logo, fitted into a square, with a soft glow so its dots get the palette's blend."""
     mark = Image.open(ROOT / "scripts" / "logos" / f"{name}.png").convert("L")
     mark = mark.crop(mark.point(lambda v: 255 if v > 128 else 0).getbbox())
     scale = LOGO_BOX / max(mark.size)
@@ -109,24 +128,32 @@ def logo_dots(name):
     cx, cy, far = w * 0.62, h * 0.35, ((w * 0.62) ** 2 + (h * 0.65) ** 2) ** 0.5
     glow = Image.new("L", (w, h))
     glow.putdata([int(255 * (1 - 0.45 * ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5 / far)) for y in range(h) for x in range(w)])
-    shape = Image.new("L", (w, h), 0)
-    shape.paste(glow, mask=mask)
-    dots = shape.convert("1")
-    soft = shape.filter(ImageFilter.GaussianBlur(1))
-    return [[soft.getpixel((x, y)) / 255 if dots.getpixel((x, y)) else None for x in range(w)] for y in range(h)]
+    # Logos are flat shapes, so every dot inside them is lit, like an LED sign; only the colour varies.
+    return [[glow.getpixel((x, y)) / 255 if mask.getpixel((x, y)) else None for x in range(w)] for y in range(h)]
 
 
 # ---------- dots to SVG ----------
 
 def band_path(grid, rows, left, top, pitch, lo, hi):
-    """The dots of some rows whose tone is in [lo, hi), as one path: each dot is a zero-length line with a round cap."""
+    """The dots of some rows whose tone is in [lo, hi), as one path.
+
+    Each run of neighbouring dots in a row is one line; with round caps and a dash pattern of
+    "0 pitch" it is drawn as a row of dots, so a solid shape costs a few bytes per row, not per dot."""
     d, px, py = [], None, None
     for y in rows:
-        for x in range(len(grid[0])):
+        x = 0
+        while x < len(grid[0]):
             if grid[y][x] is not None and lo <= grid[y][x] < hi:
-                ax, ay = round(left + x * pitch, 1), round(top + y * pitch, 1)
-                d.append(f"M{ax:g} {ay:g}h0" if px is None else f"m{round(ax - px, 1):g} {round(ay - py, 1):g}h0")
-                px, py = ax, ay
+                start = x
+                while x + 1 < len(grid[0]) and grid[y][x + 1] is not None and lo <= grid[y][x + 1] < hi:
+                    x += 1
+                ax, ay = round(left + start * pitch, 2), round(top + y * pitch, 2)
+                move = f"M{ax:g} {ay:g}" if px is None else f"m{round(ax - px, 2):g} {round(ay - py, 2):g}"
+                # A hair longer than the run, so the last dot (and a lone dot) is never dropped at the line's end.
+                length = round((x - start) * pitch + 0.05, 2)
+                d.append(f"{move}h{length:g}")
+                px, py = ax + length, ay
+            x += 1
     return "".join(d)
 
 
@@ -135,7 +162,8 @@ def dot_paths(grid, rows, left, top, pitch):
     for hi, colour in TONES:
         d = band_path(grid, rows, left + pitch / 2, top + pitch / 2, pitch, lo, hi)
         if d:
-            out.append(f'<path stroke="{colour}" stroke-width="{pitch * 0.78:.2f}" d="{d}"/>')
+            out.append(f'<path stroke="{colour}" stroke-width="{pitch * 0.78:.2f}" '
+                       f'stroke-dasharray="0 {pitch:g}" d="{d}"/>')
         lo = hi
     return "".join(out)
 
@@ -151,7 +179,7 @@ def noise_lines(grid, left, top, pitch, rnd, cls):
             out.append((top_row, cells))
     size = 4 * pitch
     res = []
-    for k in range(3):
+    for k in range(2):
         lines = "".join(
             f'<text x="{left}" y="{top + (r + BAND) * pitch}" textLength="{len(c) * 2 * pitch}" '
             f'lengthAdjust="spacing">{"".join(rnd.choice(NOISE) if on else " " for on in c)}</text>'
