@@ -1,80 +1,77 @@
 <div align="center">
 
-<img src="assets/hero.svg" alt="Flavien's portrait drawn in letters, settling out of scrambled characters" width="540">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
+  <img src="assets/hero-light.svg" alt="Flavien's portrait drawn in letters, settling out of scrambled characters" width="320">
+</picture>
 
-### Muraho! I'm Flavien 👋
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/strip-dark.svg">
+  <img src="assets/strip-light.svg" alt="" width="100%">
+</picture>
 
-IT student at AUCA in Kigali, Rwanda.<br>
-This page is a small playground. Play a game, paint a tile, take a walk, or go looking for hidden flags.
+Muraho! 👋 I'm a software developer from **Kigali, Rwanda**.<br>
+I build full-stack web and mobile apps, train small machine learning models,<br>
+and like knowing how systems break so I can build them to hold.
 
 </div>
 
----
+### 🧭 About me
+
+- 🛠️ Building **IntoreAI**, a talent screening platform that ranks applicants with a scoring engine you can explain.
+- 🗺️ Working on a mineral traceability platform that follows minerals from the mine to the buyer on a 3D map.
+- 🔐 Into security testing: vulnerability assessment and penetration testing labs, and software testing (ISTQB).
+- 🔌 Like mixing software with hardware: my clap-rhythm door lock pairs a Python ML model with a FastAPI service and an ESP32.
+- 🌱 Learning Go on the A2SV backend track.
+
+### 🧰 Tech I use
+
+| | |
+|---|---|
+| **Languages** | TypeScript · JavaScript · Python · Java · Dart · Go · C# · SQL / PL/SQL · PHP |
+| **Frontend** | React · Next.js · Vite · CesiumJS · HTML/CSS |
+| **Backend** | Node.js / Express · FastAPI · Spring Boot · GraphQL · RabbitMQ · REST APIs |
+| **Mobile** | Flutter · Firebase (Auth, Firestore) |
+| **Data & AI** | scikit-learn · LLM APIs (Gemini) · MCP servers |
+| **Databases** | MySQL · Oracle · Firestore |
+| **Tools** | Git & GitHub Actions · Docker · Linux · Postman · Codespaces |
+| **Security** | Vulnerability assessment & pentesting · Software testing (ISTQB) |
+| **Hardware** | ESP32 · Arduino |
+
+### 🚀 Things I've built
+
+| Project | What it is | Built with |
+|---|---|---|
+| [**IntoreAI**](https://github.com/mbishflavien/intore-ai) | AI talent screening: ranks applicants against a job, with scores you can explain | TypeScript · Python |
+| [**CyberGuard**](https://github.com/mbishflavien/CyberGuard-Frontend) | Frontend for an AI-native cybersecurity platform built for Africa | TypeScript · React |
+| [**Simba Supermarket**](https://github.com/mbishflavien/simba_2) | E-commerce app with cart, branch map and an AI shopping assistant | TypeScript |
+| [**VRMS**](https://github.com/mbishflavien/Vehicle-Rental-Management-System) | Vehicle rental platform; every booking emails and texts the customer through RabbitMQ | Java · Spring Boot · React |
+| [**MoMo Wallet**](https://github.com/mbishflavien/momo-wallet) | Mobile-money wallet: receive, send and cash out | Flutter · Firebase |
+| [**Kigali Weather**](https://github.com/mbishflavien/kigali-weather-app) | Live weather for four Rwandan cities | Flutter · Open-Meteo |
+| [**CareConnect**](https://github.com/mbishflavien/mbishibishi_flavien_27857_plsql_capstone_project) | Healthcare information system with the business logic inside the database | Oracle PL/SQL |
+| **Clap Lock** | A door lock that opens to the right clap rhythm (scored 95) | Python · FastAPI · ESP32 |
+
+### 📊 GitHub at a glance
+
+<!-- stats:start -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg?v=1794683265">
+  <img src="assets/stats-light.svg?v=1794683265" alt="GitHub stats: 1167 contributions this year across 24 public repos" width="100%">
+</picture>
+<!-- stats:end -->
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/strip-dark.svg">
+  <img src="assets/strip-light.svg" alt="" width="100%">
+</picture>
 
 ### 🌄 Kigali right now
 
 <!-- hills:start -->
-<img src="assets/hills.svg?v=1794682414" alt="Kigali · 20:53 · 18°C · partly cloudy" width="100%">
+<img src="assets/hills.svg?v=1794683239" alt="Kigali · 21:07 · 18°C · mostly clear" width="100%">
 
 <sub>The sky here follows the real time and weather in Kigali and updates every hour. The fireflies are the things I did on GitHub this month.</sub>
 <!-- hills:end -->
-
----
-
-### 🌰 Igisoro: the internet vs. my bot
-
-Igisoro is a seed game Rwandans have played for generations, carved into wood or dug into the ground. Here, **everyone who visits plays on the same team** against a small bot I wrote. One move per click.
-
-<!-- igisoro:start -->
-<p align="center"><img src="assets/igisoro.svg?v=1794682622" alt="Igisoro board" width="100%"></p>
-
-<p align="center"><b>Your move.</b> Click a pit number to sow from it. Only pits with 2 or more seeds can be played.</p>
-
-<table align="center">
-<tr><td><sub>front row</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C16&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>16</b></a><br><sub>2 seeds</sub></td><td align="center">15<br><sub>0</sub></td><td align="center">14<br><sub>0</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C13&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>13</b></a><br><sub>2 seeds</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C12&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>12</b></a><br><sub>3 seeds</sub></td><td align="center">11<br><sub>0</sub></td><td align="center">10<br><sub>0</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C9&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>9</b></a><br><sub>4 seeds</sub></td></tr>
-<tr><td><sub>back row</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>1</b></a><br><sub>2 seeds</sub></td><td align="center">2<br><sub>0</sub></td><td align="center">3<br><sub>0</sub></td><td align="center">4<br><sub>1</sub></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=igisoro%7Cmove%7C5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else."><b>5</b></a><br><sub>4 seeds</sub></td><td align="center">6<br><sub>0</sub></td><td align="center">7<br><sub>0</sub></td><td align="center">8<br><sub>0</sub></td></tr>
-</table>
-
-<p align="center"><sub>Latest moves</sub></p>
-<ul><li>@mbishflavien played pit 1, captured 8; the bot answered, captured 22</li></ul>
-<p align="center"><sub>Most moves: <a href="https://github.com/mbishflavien">@mbishflavien</a> (1)</sub></p>
-<!-- igisoro:end -->
-
-<details>
-<summary>How to play</summary>
-<br>
-
-- The bottom two rows are ours (the internet's). The top two are the bot's.
-- Pick one of our pits with at least 2 seeds. Its seeds are dropped one by one around our two rows, anticlockwise, in the order of the pit numbers.
-- If the last seed lands in a pit that already had seeds, pick them all up and keep going.
-- If that pit is in our front row and **both** of the bot's pits facing it have seeds, we capture them and sow them again from the pit where the move began.
-- The move ends when the last seed lands in an empty pit. Then the bot plays.
-- Whoever can't move loses.
-
-Families play Igisoro with small differences in the rules. This is a simplified version.
-</details>
-
----
-
-### 🎨 The Imigongo wall
-
-Imigongo is the black, white and red geometric art from eastern Rwanda, first made by hand on the walls of homes. This wall is painted by visitors, one tile at a time. When all 48 tiles are done, it gets saved and a new wall starts.
-
-<!-- mural:start -->
-<p align="center"><img src="assets/mural.svg?v=1794682139" alt="Imigongo wall" width="100%"></p>
-
-<details>
-<summary><b>🖌️ Paint a tile</b> (48 left, up to 3 per person)</summary>
-<br>
-<table align="center">
-<tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G1</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH1&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H1</a></td></tr><tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G2</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH2&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H2</a></td></tr><tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G3</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH3&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H3</a></td></tr><tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G4</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH4&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H4</a></td></tr><tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G5</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH5&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H5</a></td></tr><tr><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CA6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">A6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CB6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">B6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CC6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">C6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CD6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">D6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CE6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">E6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CF6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">F6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CG6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">G6</a></td><td align="center"><a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=mural%7Cpaint%7CH6&amp;body=Just+press+%2A%2ACreate%2A%2A+below.+You+don%27t+need+to+write+anything+else.">H6</a></td></tr>
-</table>
-</details>
-
-<p align="center"><sub>Recently painted by nobody yet</sub></p>
-<!-- mural:end -->
-
----
 
 ### 🗺️ A short walk through Kigali
 
@@ -88,13 +85,13 @@ The streets are clean, the hills are green, and two moto drivers wave at you.
 <summary>🏍️ "Take me up to the university."</summary>
 <br>
 
-You ride up to AUCA. A student by the gate says Flavien was just here, talking about a lock that opens when you clap.
+You ride up to the campus. A student by the gate says Flavien was just here, talking about a lock that opens when you clap.
 
 <details>
 <summary>👏 "A lock that opens when you clap?"</summary>
 <br>
 
-"It's real," the student laughs. A small board listens for a clapping rhythm, a model checks whether it's the right one, and a little motor turns the lock. It scored 95 in class. You can look at it here: [ai-iot-clap-lock](https://github.com/mbishflavien/ai-iot-clap-lock).
+"It's real," the student laughs. A small board listens for a clapping rhythm, a model checks whether it's the right one, and a little motor turns the lock.
 
 "But Flavien already left. Try the market."
 
@@ -132,16 +129,18 @@ Halfway up the road, someone is testing a bus booking app on a phone with their 
 </details>
 
 <details>
-<summary>🌰 Sit with the old man playing Igisoro</summary>
+<summary>☕ Stop at a café first</summary>
 <br>
 
-He doesn't look up. "Flavien plays too, but never beats me." He points at the board above this story. "Go on. The internet needs you."
+On the next table, a laptop is open with a pull request half-reviewed and a phone app running in an emulator. The owner has just stepped out.
+
+You wait. The coffee is excellent. Rwanda grows some of the best.
+
+When Flavien comes back: "Oh! You found me. 👋 Want to see what I'm building? Scroll up." **The end.**
 
 </details>
 </details>
 </details>
-
----
 
 ### 🚩 Three flags
 
@@ -170,4 +169,9 @@ Then <a href="https://github.com/mbishflavien/mbishflavien/issues/new?title=ctf%
 <p align="center"><sub>No one has found a flag yet.</sub></p>
 <!-- ctf:end -->
 
-<p align="center"><sub>Everything on this page is redrawn by small Python scripts in <a href="scripts">scripts/</a> and GitHub Actions.</sub></p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/strip-dark.svg">
+  <img src="assets/strip-light.svg" alt="" width="100%">
+</picture>
+
+<p align="center"><sub>Everything on this page is drawn by small Python scripts in <a href="scripts">scripts/</a> and kept fresh by GitHub Actions.</sub></p>

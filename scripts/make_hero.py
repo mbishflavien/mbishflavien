@@ -1,4 +1,5 @@
-"""Turns a portrait photo into assets/hero.svg: scrambled letters that settle into an ASCII portrait.
+"""Turns a portrait photo into assets/hero-light.svg and assets/hero-dark.svg:
+scrambled letters that settle into an ASCII portrait, in black or white on a transparent background.
 
 Only needs to run once:  python scripts/make_hero.py path/to/photo.png
 The photo itself is not stored in the repo.
@@ -11,14 +12,13 @@ from PIL import Image, ImageFilter, ImageOps
 
 from common import write_asset
 
-COLS = 72
+COLS = 56
 CHAR_W = 6.6          # width of one character in the SVG
 LINE_H = 12.0         # height of one line in the SVG
 RAMP = " .:-=+*#%@"   # light to dark
 NOISE = "abcdefghijkmnopqrstuvwxyz0123456789#%*+=?"
 CYCLE = 14            # seconds for one full loop
-
-PAPER, INK, OCHRE = "#f3ead9", "#2b1d16", "#9c3b22"
+THEMES = {"light": "#1f2328", "dark": "#e6edf3"}   # GitHub's own text colours
 
 
 def portrait_rows(photo):
@@ -39,27 +39,19 @@ def portrait_rows(photo):
         for c in range(COLS):
             box = (int(c * cell_w), int(r * cell_h), int((c + 1) * cell_w), int((r + 1) * cell_h))
             a = alpha.crop(box)
-            cover = sum(a.get_flattened_data()) / (255 * a.width * a.height)
-            if cover < 0.4:
+            area = a.width * a.height
+            if sum(a.get_flattened_data()) / (255 * area) < 0.4:
                 cells.append(None)
                 continue
-            lum = sum(gray.crop(box).get_flattened_data()) / (a.width * a.height)
-            edge = sum(edges.crop(box).get_flattened_data()) / (a.width * a.height)
-            cells.append((lum, edge))
+            cells.append((sum(gray.crop(box).get_flattened_data()) / area,
+                          sum(edges.crop(box).get_flattened_data()) / area))
 
     # Spread brightness evenly over the ramp so the face keeps its detail.
     lums = sorted(v[0] for v in cells if v)
     top_edge = sorted(v[1] for v in cells if v)[int(len(lums) * 0.95)] or 1
 
     def rank(x):
-        lo, hi = 0, len(lums)
-        while lo < hi:
-            mid = (lo + hi) // 2
-            if lums[mid] < x:
-                lo = mid + 1
-            else:
-                hi = mid
-        return lo / len(lums)
+        return sum(1 for v in lums if v < x) / len(lums)
 
     lines = []
     for r in range(rows):
@@ -75,23 +67,19 @@ def portrait_rows(photo):
     return lines
 
 
-def scramble(line, rnd):
-    return "".join(" " if ch == " " else rnd.choice(NOISE) for ch in line)
-
-
-def build_svg(lines):
+def build_svg(lines, fg):
     rnd = random.Random(3)
-    pad_x, top = 34, 40
     art_w = COLS * CHAR_W
-    width = int(art_w + pad_x * 2)
+    pad = 8
+    width = int(art_w + pad * 2)
     art_h = len(lines) * LINE_H
-    height = int(top + art_h + 96)
-    name_y = top + art_h + 40
+    name_y = art_h + 42
+    height = int(name_y + 14)
     flag = base64.b64encode(b"flag{murakaza_neza}").decode()
 
     css = f"""
-    text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;white-space:pre}}
-    .a{{fill:{INK}}} .n{{fill:{OCHRE}}}
+    text{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;white-space:pre;fill:{fg}}}
+    .n{{fill-opacity:.4}}
     .r{{animation:show {CYCLE}s linear infinite both}}
     .z{{animation:hide {CYCLE}s linear infinite both}}
     .f{{opacity:0;animation:flick .45s steps(1) infinite}}
@@ -99,43 +87,30 @@ def build_svg(lines):
     @keyframes show{{0%,12%{{opacity:0}}16%,86%{{opacity:1}}90%,100%{{opacity:0}}}}
     @keyframes hide{{0%,12%{{opacity:1}}16%,86%{{opacity:0}}90%,100%{{opacity:1}}}}
     @keyframes flick{{0%{{opacity:1}}33%,100%{{opacity:0}}}}
-    .title{{font-family:Georgia,'Times New Roman',serif;font-size:24px;fill:{INK}}}
-    .sub{{font-family:Georgia,'Times New Roman',serif;font-size:14px;fill:{OCHRE};font-style:italic}}
-    .cover{{fill:{PAPER};animation:type {CYCLE}s steps(22) infinite both}}
-    .cover2{{fill:{PAPER};animation:type2 {CYCLE}s steps(28) infinite both}}
-    @keyframes type{{0%,30%{{transform:translateX(0)}}40%,88%{{transform:translateX({width}px)}}90%,100%{{transform:translateX(0)}}}}
-    @keyframes type2{{0%,40%{{transform:translateX(0)}}50%,88%{{transform:translateX({width}px)}}90%,100%{{transform:translateX(0)}}}}
+    .name{{font-size:20px;letter-spacing:.12em}}
     """
-
-    zig = " ".join(f"{x},{12 if (x // 12) % 2 else 4}" for x in range(0, width + 12, 12))
-    zig_b = " ".join(f"{x},{height - (12 if (x // 12) % 2 else 4)}" for x in range(0, width + 12, 12))
-
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}" role="img">',
         "<title>Flavien Mbishibishi, drawn in letters</title>",
         f"<!-- you found a quiet corner: {flag} -->",
         f"<style>{css}</style>",
-        f'<rect width="{width}" height="{height}" rx="18" fill="{PAPER}"/>',
-        f'<polyline points="{zig}" fill="none" stroke="{OCHRE}" stroke-width="2.5"/>',
-        f'<polyline points="{zig_b}" fill="none" stroke="{OCHRE}" stroke-width="2.5"/>',
+        f'<defs><clipPath id="type"><rect x="0" y="{name_y - 22}" height="30" width="0">'
+        f'<animate attributeName="width" values="0;0;{width};{width};0;0" keyTimes="0;.28;.4;.88;.9;1" '
+        f'dur="{CYCLE}s" repeatCount="indefinite"/></rect></clipPath></defs>',
     ]
     for i, line in enumerate(lines):
         if not line.strip():
             continue
-        y = top + (i + 1) * LINE_H
+        y = (i + 1) * LINE_H
         delay = f'style="animation-delay:{i * 0.05:.2f}s"'
-        tl = f'x="{pad_x}" y="{y:.1f}" textLength="{art_w:.1f}" lengthAdjust="spacing"'
+        tl = f'x="{pad}" y="{y:.1f}" textLength="{art_w:.1f}" lengthAdjust="spacing"'
         out.append(f'<g class="z" {delay}>')
         for k in range(3):
-            out.append(f'<text class="n f f{k}" {tl}>{scramble(line, rnd)}</text>')
+            out.append(f'<text class="n f f{k}" {tl}>{"".join(" " if ch == " " else rnd.choice(NOISE) for ch in line)}</text>')
         out.append("</g>")
-        out.append(f'<text class="a r" {delay} {tl}>{line}</text>')
-
+        out.append(f'<text class="r" {delay} {tl}>{line}</text>')
     out += [
-        f'<text class="title" x="{width / 2}" y="{name_y}" text-anchor="middle">Flavien Mbishibishi</text>',
-        f'<rect class="cover" x="0" y="{name_y - 26}" width="{width}" height="34"/>',
-        f'<text class="sub" x="{width / 2}" y="{name_y + 26}" text-anchor="middle">IT student · Kigali, Rwanda</text>',
-        f'<rect class="cover2" x="0" y="{name_y + 10}" width="{width}" height="24"/>',
+        f'<text class="name" x="{width / 2}" y="{name_y}" text-anchor="middle" clip-path="url(#type)">FLAVIEN MBISHIBISHI</text>',
         "</svg>",
     ]
     return "\n".join(out)
@@ -144,5 +119,7 @@ def build_svg(lines):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/make_hero.py path/to/photo.png")
-    write_asset("hero.svg", build_svg(portrait_rows(sys.argv[1])))
-    print("wrote assets/hero.svg")
+    rows = portrait_rows(sys.argv[1])
+    for theme, fg in THEMES.items():
+        write_asset(f"hero-{theme}.svg", build_svg(rows, fg))
+    print("wrote assets/hero-light.svg and assets/hero-dark.svg")

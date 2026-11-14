@@ -4,7 +4,7 @@ on:
   issues:
     types: [opened]
 
-# One move at a time, so two people can't play the same turn.
+# One submission at a time, so two answers can't overwrite each other.
 concurrency:
   group: play
   cancel-in-progress: false
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   play:
-    if: startsWith(github.event.issue.title, 'igisoro|') || startsWith(github.event.issue.title, 'mural|') || startsWith(github.event.issue.title, 'ctf|')
+    if: startsWith(github.event.issue.title, 'ctf|')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Play the move
+      - name: Check the flag
         run: python scripts/play.py
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
@@ -32,12 +32,12 @@ jobs:
           CTF_FLAGS: ${{ secrets.CTF_FLAGS }}
           REPLY_FILE: ${{ runner.temp }}/reply.md
 
-      - name: Save the new board
+      - name: Save the Hall of Hackers
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "play: ${{ github.event.issue.user.login }}"
+          git diff --cached --quiet || git commit -m "ctf: ${{ github.event.issue.user.login }}"
           git pull --rebase
           git push
 
