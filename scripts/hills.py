@@ -35,7 +35,7 @@ WEATHER = [(0, "clear"), (1, "mostly clear"), (2, "partly cloudy"), (3, "cloudy"
            (51, "drizzle"), (61, "rain"), (80, "showers"), (95, "thunderstorm")]
 CLOUDS = {0: 0, 1: 2, 2: 4, 3: 7}
 LAYERS = 6
-BASES = [148, 166, 186, 208, 234, 262]     # how high each ridge sits, far to near
+BASES = [140, 158, 178, 198, 226, 286]     # how high each ridge sits, far to near
 
 
 def phase_of(hour):
@@ -116,14 +116,30 @@ def ridge(i):
     """Points along the top of ridge i (0 = farthest). Fixed seeds: the hills keep their shape all day."""
     rnd = random.Random(70 + i)
     near = i / (LAYERS - 1)
-    waves = [(10 + 14 * near, 0.0045), (6 + 6 * near, 0.011), (3 + 2 * near, 0.026), (1.2, 0.06)]
+    waves = [(10 + 14 * near, 0.0045), (6 + 6 * near, 0.011), (3 + 2 * near, 0.026)]
     phases = [rnd.uniform(0, 6.28) for _ in waves]
     return [(x, BASES[i] + sum(a * math.sin(x * f + p) for (a, f), p in zip(waves, phases)))
-            for x in range(-10, W + 20, 8)]
+            for x in range(-20, W + 40, 20)]
+
+
+def smooth(pts):
+    """A smooth curve through the points (Catmull-Rom turned into Bezier curves), for soft, rounded hills."""
+    d = [f"M{pts[0][0]},{pts[0][1]:.1f}"]
+    for i in range(len(pts) - 1):
+        p0, p1, p2 = pts[max(i - 1, 0)], pts[i], pts[i + 1]
+        p3 = pts[min(i + 2, len(pts) - 1)]
+        c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
+        c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
+        d.append(f"C{c1[0]:.1f},{c1[1]:.1f} {c2[0]:.1f},{c2[1]:.1f} {p2[0]},{p2[1]:.1f}")
+    return "".join(d)
 
 
 def area(pts):
-    return f"M-10,{H} " + " ".join(f"L{x},{y:.1f}" for x, y in pts) + f" L{W + 20},{H} Z"
+    return smooth(pts) + f" L{pts[-1][0]},{H + 5} L{pts[0][0]},{H + 5} Z"
+
+
+def shifted(pts, dy, wobble=0, k=0):
+    return [(x, y + dy + wobble * math.sin(x * .02 + k)) for x, y in pts]
 
 
 def height_at(pts, x):
@@ -154,15 +170,32 @@ def moon(cx, cy, r, phase, sky):
             f'<path d="{d}" fill="{mix(CREAM, "#ffffff", .2)}"/>')
 
 
-def cloud(rnd, x, y, s, light, shade, op):
-    """A soft cloud: overlapping puffs with fading edges, a little darker underneath."""
-    puffs = []
-    for _ in range(rnd.randint(4, 7)):
-        dx, dy = rnd.uniform(-38, 38) * s, rnd.uniform(-7, 3) * s
-        rx, ry = rnd.uniform(16, 30) * s, rnd.uniform(7, 12) * s
-        puffs.append(f'<ellipse cx="{x + dx:.0f}" cy="{y + dy + ry * .35:.0f}" rx="{rx:.0f}" ry="{ry * .8:.0f}" fill="{shade}"/>')
-        puffs.append(f'<ellipse cx="{x + dx:.0f}" cy="{y + dy:.0f}" rx="{rx:.0f}" ry="{ry:.0f}" fill="{light}"/>')
-    return f'<g opacity="{op}">' + "".join(puffs) + "</g>"
+def cloud(rnd, uid, x, y, s, light, shade, op):
+    """A cartoon cloud: round puffs on a flat bottom, with a soft darker band underneath."""
+    puffs = [(0, 0, 13)] + [(rnd.uniform(-26, 26), rnd.uniform(-6, 2), rnd.uniform(8, 13)) for _ in range(4)]
+    base = max(py + pr for _, py, pr in puffs) - 3
+    circles = lambda fill, dy: "".join(
+        f'<circle cx="{x + px * s:.1f}" cy="{y + (py + dy) * s:.1f}" r="{pr * s:.1f}" fill="{fill}"/>' for px, py, pr in puffs)
+    return (f'<clipPath id="cl{uid}"><rect x="{x - 60 * s:.0f}" y="{y - 40 * s:.0f}" width="{120 * s:.0f}" '
+            f'height="{(base + 40) * s:.0f}"/></clipPath>'
+            f'<g clip-path="url(#cl{uid})" opacity="{op}">{circles(shade, 0)}{circles(light, -2.5)}</g>')
+
+
+def banana(x, y, s, colour):
+    """A banana plant: a short stem and big drooping leaves."""
+    leaves = "".join(
+        f'<path d="M0,-10 Q{dx * .5:.1f},{-18 + abs(dx) * .1:.1f} {dx:.1f},{-8 + abs(dx) * .35:.1f} '
+        f'Q{dx * .55:.1f},{-12 + abs(dx) * .2:.1f} 0,-9Z"/>' for dx in (-17, -11, 11, 17, -4, 6))
+    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s:.2f})" fill="{colour}">'
+            f'<rect x="-1.4" y="-11" width="2.8" height="11" rx="1"/>{leaves}</g>')
+
+
+def eucalyptus(x, y, s, colour):
+    """A tall eucalyptus: thin trunk and a narrow, layered crown."""
+    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s:.2f})" fill="{colour}">'
+            f'<rect x="-.8" y="-26" width="1.6" height="26"/>'
+            f'<ellipse cx="0" cy="-30" rx="5" ry="9"/><ellipse cx="-3" cy="-22" rx="4" ry="5"/>'
+            f'<ellipse cx="3" cy="-24" rx="4" ry="5"/></g>')
 
 
 # ---------- the scene ----------
@@ -172,33 +205,37 @@ def build(now, temp, code, activity):
     ph = phase_of(hour)
     pal = palette_at(hour)
     dark = ph == "night"
+    lit = dark or hour >= 18 or hour < 6              # windows and city lights are on
     word = describe(code)
     rnd = random.Random(now.strftime("%Y%m%d%H"))      # sky details change with the hour
-    land = random.Random(7)                             # the town and trees stay where they are
+    land = random.Random(7)                             # the town, road and trees stay where they are
     overcast = code >= 3
     foggy = 45 <= code < 51
+    glow = pal["glow"] or pal["haze"]
 
     css = """
     .drift{animation:drift linear infinite}
-    @keyframes drift{from{transform:translateX(-320px)}to{transform:translateX(1120px)}}
+    @keyframes drift{from{transform:translateX(-340px)}to{transform:translateX(1140px)}}
     .tw{animation:tw 5s ease-in-out infinite alternate}
-    @keyframes tw{from{opacity:.35}to{opacity:1}}
+    @keyframes tw{from{opacity:.3}to{opacity:1}}
     .ff{animation:float 9s ease-in-out infinite alternate}
     @keyframes float{0%{transform:translate(0,0);opacity:.15}50%{opacity:.8}100%{transform:translate(18px,-12px);opacity:.2}}
     .bird{animation:fly linear infinite}
     @keyframes fly{from{transform:translateX(-60px)}to{transform:translateX(880px)}}
     .drop{animation:fall .9s linear infinite}
     @keyframes fall{from{transform:translate(0,-40px)}to{transform:translate(-10px,330px)}}
+    .sway{animation:sway 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+    @keyframes sway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
     text{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
     """
     defs = [
         f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{pal["top"]}"/>'
-        f'<stop offset=".75" stop-color="{pal["bottom"]}"/><stop offset="1" stop-color="{pal["bottom"]}"/></linearGradient>',
-        f'<radialGradient id="sunglow"><stop offset="0" stop-color="{pal["glow"] or GOLD}" stop-opacity=".55"/>'
-        f'<stop offset="1" stop-color="{pal["glow"] or GOLD}" stop-opacity="0"/></radialGradient>',
+        f'<stop offset=".72" stop-color="{pal["bottom"]}"/><stop offset="1" stop-color="{pal["bottom"]}"/></linearGradient>',
+        f'<radialGradient id="sunglow"><stop offset="0" stop-color="{glow}" stop-opacity=".5"/>'
+        f'<stop offset="1" stop-color="{glow}" stop-opacity="0"/></radialGradient>',
         f'<radialGradient id="moonglow"><stop offset="0" stop-color="{CREAM}" stop-opacity=".18"/>'
         f'<stop offset="1" stop-color="{CREAM}" stop-opacity="0"/></radialGradient>',
-        f'<radialGradient id="lamp"><stop offset="0" stop-color="{GOLD}" stop-opacity=".9"/>'
+        f'<radialGradient id="lamp"><stop offset="0" stop-color="{GOLD}" stop-opacity=".85"/>'
         f'<stop offset="1" stop-color="{GOLD}" stop-opacity="0"/></radialGradient>',
         f'<linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{pal["haze"]}" stop-opacity="0"/>'
         f'<stop offset=".55" stop-color="{pal["haze"]}" stop-opacity="1"/><stop offset="1" stop-color="{pal["haze"]}" stop-opacity="0"/></linearGradient>',
@@ -209,100 +246,152 @@ def build(now, temp, code, activity):
     # Hidden in plain sight.
     o.append(f'<text x="790" y="10" font-size="3" fill-opacity="0" text-anchor="end">{b"flag{amahoro}".hex()}</text>')
 
-    # Sky: stars and the moon at night, the sun by day.
+    # ---- sky ----
     if dark:
-        for _ in range(90):
-            y = rnd.random() ** 1.6 * 170
+        for _ in range(80):
+            y = rnd.random() ** 1.6 * 160
             twinkle = 'class="tw" ' if rnd.random() < .3 else ""
-            o.append(f'<circle {twinkle}cx="{rnd.uniform(0, W):.0f}" cy="{y:.0f}" '
-                     f'r="{rnd.uniform(.4, 1.1):.1f}" fill="{CREAM}" opacity="{rnd.uniform(.3, .8):.2f}" '
-                     f'style="animation-delay:-{rnd.uniform(0, 5):.1f}s"/>')
+            o.append(f'<circle {twinkle}cx="{rnd.uniform(0, W):.0f}" cy="{y:.0f}" r="{rnd.uniform(.4, 1):.1f}" '
+                     f'fill="{CREAM}" opacity="{rnd.uniform(.3, .8):.2f}" style="animation-delay:-{rnd.uniform(0, 5):.1f}s"/>')
+        for _ in range(5):   # a few brighter stars drawn as little sparkles
+            x, y, r = rnd.uniform(30, W - 30), rnd.uniform(15, 120), rnd.uniform(2.5, 3.5)
+            o.append(f'<path class="tw" style="animation-delay:-{rnd.uniform(0, 5):.1f}s" fill="{CREAM}" opacity=".8" '
+                     f'd="M{x:.0f},{y - r:.1f} Q{x:.0f},{y:.0f} {x + r:.1f},{y:.0f} Q{x:.0f},{y:.0f} {x:.0f},{y + r:.1f} '
+                     f'Q{x:.0f},{y:.0f} {x - r:.1f},{y:.0f} Q{x:.0f},{y:.0f} {x:.0f},{y - r:.1f}Z"/>')
         t = ((hour - 18) % 24) / 12
         o.append(moon(60 + t * 680, 200 - math.sin(math.pi * t) * 150, 13, moon_phase(now), pal["top"]))
     else:
         t = min(max((hour - 6) / 12, 0), 1)
         sx, sy = 60 + t * 680, 225 - math.sin(math.pi * t) * 185
         if not overcast:
-            o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="90" fill="url(#sunglow)"/>'
-                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="15" fill="{mix(pal["glow"], "#ffffff", .3)}"/>')
+            o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="95" fill="url(#sunglow)"/>'
+                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="36" fill="{glow}" opacity=".12"/>'
+                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="26" fill="{glow}" opacity=".16"/>'
+                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="16" fill="{mix(glow, "#ffffff", .35)}"/>')
         else:
             o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="70" fill="url(#sunglow)" opacity=".5"/>')
-    if pal["glow"] and ph in ("dawn", "dusk"):
+    if ph in ("dawn", "dusk"):
         o.append(f'<ellipse cx="{60 if ph == "dawn" else 740}" cy="150" rx="420" ry="70" fill="url(#sunglow)"/>')
 
-    # Clouds drift slowly from left to right.
+    # Cartoon clouds drift slowly from left to right.
     if dark:
-        light, shade, op = "#2b3556", "#1f2846", .75
-    elif ph in ("dawn", "dusk"):
-        light, shade, op = "#efc3a3", "#8f7f98", .85
+        light, shade, op = "#2c375a", "#1f2846", .8
+    elif ph in ("dawn", "dusk") and not 10 <= hour < 17:
+        light, shade, op = mix(glow, "#ffffff", .45), mix(pal["haze"], pal["top"], .3), .9
     else:
-        light, shade, op = ("#dde2e8", "#b8c0cb", .95) if overcast else ("#f6f3ee", "#cfd6df", .9)
-    for _ in range(CLOUDS.get(code, 8)):
-        dur, delay = rnd.randint(140, 220), rnd.uniform(0, 220)
+        light, shade, op = ("#e3e7ec", "#bcc4cf", .95) if overcast else ("#fbf9f4", "#d5dce5", .95)
+    for c in range(CLOUDS.get(code, 8)):
+        dur, delay = rnd.randint(150, 230), rnd.uniform(0, 230)
         o.append(f'<g class="drift" style="animation-duration:{dur}s;animation-delay:-{delay:.0f}s">'
-                 f'{cloud(rnd, 0, rnd.uniform(35, 120), rnd.uniform(.8, 1.5), light, shade, op)}</g>')
+                 f'{cloud(rnd, c, 0, rnd.uniform(40, 115), rnd.uniform(.9, 1.6), light, shade, op)}</g>')
 
-    # The hills, far to near. Far ridges fade into the haze; mist sits in the valleys between them.
+    # ---- the land, far to near ----
     ridges = [ridge(i) for i in range(LAYERS)]
+    colours = []
     for i, pts in enumerate(ridges):
         depth = 1 - i / (LAYERS - 1)                           # 1 = farthest, 0 = nearest
-        colour = mix(pal["near"], pal["haze"], depth * 0.82)
+        colour = mix(pal["near"], pal["haze"], depth * 0.8)
+        colours.append(colour)
         top_y = min(y for _, y in pts)
         defs.append(f'<linearGradient id="h{i}" gradientUnits="userSpaceOnUse" x1="0" y1="{top_y:.0f}" x2="0" y2="{H}">'
-                    f'<stop offset="0" stop-color="{mix(colour, pal["haze"], .12)}"/>'
-                    f'<stop offset="1" stop-color="{mix(colour, "#000000", .18)}"/></linearGradient>'
+                    f'<stop offset="0" stop-color="{mix(colour, pal["haze"], .1)}"/>'
+                    f'<stop offset="1" stop-color="{mix(colour, "#000000", .2)}"/></linearGradient>'
                     f'<clipPath id="c{i}"><path d="{area(pts)}"/></clipPath>')
         o.append(f'<path d="{area(pts)}" fill="url(#h{i})"/>')
+        # Soft light catching the top of each ridge.
+        o.append(f'<path d="{smooth(pts)}" fill="none" stroke="{mix(colour, glow, .45)}" stroke-width="{1 + i * .25:.2f}" '
+                 f'opacity="{.18 if dark else .35}"/>')
 
-        # Terraces: faint contour lines on the middle hills.
-        if i in (2, 3, 4):
-            lines = []
-            for k in range(1, 9):
-                off = k * (5 + i)
-                lines.append("M" + " L".join(f"{x},{y + off + 3 * math.sin(x * .03 + k):.1f}" for x, y in pts))
-            o.append(f'<path clip-path="url(#c{i})" d="{" ".join(lines)}" fill="none" '
-                     f'stroke="{mix(colour, pal["haze"], .35)}" stroke-width=".7" opacity=".35"/>')
+        # Ridge 2: Kigali on the skyline, with the Convention Centre's dome.
+        if i == 2:
+            city = []
+            for k in range(14):
+                bx = 470 + k * 9 + land.uniform(-2, 2)
+                bw, bh = land.uniform(5, 8), land.uniform(6, 20) * (1.3 if 4 <= k <= 8 else 1)
+                by = height_at(pts, bx) + 4
+                wall = mix("#1a2030", colour, .4) if lit else mix(CREAM, colour, .45)
+                city.append(f'<rect x="{bx:.1f}" y="{by - bh:.1f}" width="{bw:.1f}" height="{bh + 6:.1f}" fill="{wall}"/>')
+                if lit:
+                    for wy in range(int(by - bh + 3), int(by), 4):
+                        if land.random() < .5:
+                            city.append(f'<rect x="{bx + 1.5:.1f}" y="{wy}" width="1.4" height="1.4" fill="{GOLD}" opacity=".8"/>')
+            dx = 432
+            dy = height_at(pts, dx) + 3
+            # The Convention Centre's dome: one rounded dome with curved ribs, lit in warm colours at night.
+            dw, dh = 22, 20
+            shell = mix(GOLD, P["ochre"], .35) if lit else mix(CREAM, colour, .3)
+            rib = mix(P["sky"], GOLD, .3) if lit else mix("#8e98a6", colour, .35)
+            ribs = "".join(f'<path d="M{dx:.1f},{dy - dh:.1f} Q{dx + o * .9:.1f},{dy - dh * .55:.1f} {dx + o * 1.1:.1f},{dy}" '
+                           f'fill="none" stroke="{rib}" stroke-width="1.1"/>' for o in (-16, -8, 0, 8, 16))
+            dome = (f'<path d="M{dx - dw},{dy} A{dw},{dh} 0 0 1 {dx + dw},{dy}Z" fill="{shell}" opacity="{.85 if lit else .95}"/>'
+                    + ribs)
+            o.append(f'<g>{"".join(city)}{dome}</g>')
+            if lit:
+                o.append(f'<ellipse cx="{dx}" cy="{dy - 8}" rx="34" ry="18" fill="url(#lamp)" opacity=".35"/>')
 
-        # The town on the middle hills: houses by day, warm windows at night.
-        if i in (2, 3):
-            for _ in range(5):
-                cx = land.uniform(40, W - 40)
-                for _ in range(land.randint(5, 11)):
-                    x = cx + land.gauss(0, 26)
-                    y = height_at(pts, x) + land.uniform(5, 26) + i * 2
-                    s = 0.8 + 0.25 * (i - 2)
-                    if dark:
-                        if land.random() < .8:
-                            o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{3.2 * s:.1f}" fill="url(#lamp)" opacity=".7"/>'
-                                     f'<circle cx="{x:.1f}" cy="{y:.1f}" r=".7" fill="{mix(GOLD, "#ffffff", .4)}"/>')
-                    else:
-                        wall = mix(CREAM, colour, .25 + .3 * depth)
-                        roof = mix("#8a5a44", colour, .2 + .3 * depth)
-                        o.append(f'<g transform="translate({x:.1f},{y:.1f}) scale({s:.2f})">'
-                                 f'<rect x="-2.5" y="-1.6" width="5" height="3.2" fill="{wall}"/>'
-                                 f'<path d="M-3.2,-1.6 L0,-3.6 L3.2,-1.6Z" fill="{roof}"/></g>')
+        # Ridge 3: terraced fields, cartoon stripes in two greens.
+        if i == 3:
+            bands = []
+            for k in range(12):
+                a = shifted(pts, 6 + k * 6, 2, k)
+                b = shifted(pts, 6 + (k + 1) * 6, 2, k + 1)
+                band = smooth(a) + " L" + " L".join(f"{x},{y:.1f}" for x, y in reversed(b)) + "Z"
+                tone = mix(colour, glow if k % 2 else "#000000", .08)
+                bands.append(f'<path d="{band}" fill="{tone}"/>')
+            o.append(f'<g clip-path="url(#c{i})" opacity=".8">{"".join(bands)}</g>')
+            # A lake in the valley below, reflecting the sky.
+            lx = 250
+            ly = height_at(ridges[4], lx) - 4
+            o.append(f'<ellipse cx="{lx}" cy="{ly:.0f}" rx="70" ry="9" fill="{mix(pal["bottom"], colour, .35)}"/>'
+                     f'<ellipse cx="{lx - 10}" cy="{ly - 2:.0f}" rx="40" ry="2" fill="{mix(pal["bottom"], "#ffffff", .3)}" opacity=".5"/>')
+
+        # Ridge 4: a red-dirt road winding up the hill, with houses along it.
+        if i == 4:
+            road = (f"M560,{H + 5} C540,{H - 20} 640,{H - 30} 610,{height_at(pts, 610) + 34:.0f} "
+                    f"S520,{height_at(pts, 540) + 22:.0f} 500,{height_at(pts, 500) + 4:.0f}")
+            o.append(f'<g clip-path="url(#c{i})" fill="none" stroke-linecap="round">'
+                     f'<path d="{road}" stroke="{mix("#a5532f", colour, .35)}" stroke-width="7"/>'
+                     f'<path d="{road}" stroke="{mix("#c8784a", colour, .3)}" stroke-width="2.5" opacity=".7"/></g>')
+            for cx in (150, 330, 600, 700):
+                for _ in range(land.randint(4, 7)):
+                    x = cx + land.gauss(0, 22)
+                    y = height_at(pts, x) + land.uniform(7, 24)
+                    if lit and land.random() < .85:
+                        o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="url(#lamp)" opacity=".75"/>'
+                                 f'<rect x="{x - .8:.1f}" y="{y - .8:.1f}" width="1.6" height="1.6" fill="{mix(GOLD, "#ffffff", .4)}"/>')
+                    elif not lit:
+                        wall = mix(CREAM, colour, .15)
+                        roof = mix("#a8452b", colour, .15)
+                        o.append(f'<g transform="translate({x:.1f},{y:.1f})">'
+                                 f'<rect x="-3.5" y="-2.5" width="7" height="5" fill="{wall}"/>'
+                                 f'<rect x="-.8" y="0" width="1.6" height="2.5" fill="{mix(roof, "#000000", .4)}"/>'
+                                 f'<path d="M-4.5,-2.5 L0,-6 L4.5,-2.5Z" fill="{roof}"/></g>')
 
         # Mist pooling in the valley behind the next ridge.
         if i < LAYERS - 1:
-            y0 = BASES[i] - 6
-            strength = .5 if foggy else (.28 if ph != "day" else .22)
-            o.append(f'<rect x="-10" y="{y0}" width="{W + 20}" height="34" fill="url(#mist)" opacity="{strength * depth + .05:.2f}"/>')
+            strength = .5 if foggy else (.26 if ph != "day" else .18)
+            o.append(f'<rect x="-10" y="{BASES[i] - 6}" width="{W + 20}" height="34" fill="url(#mist)" '
+                     f'opacity="{strength * depth + .05:.2f}"/>')
 
-    # A dark line of trees along the nearest ridge.
+    # The nearest ridge: banana plants and eucalyptus trees, gently swaying.
     front = ridges[-1]
-    tree = mix(pal["near"], "#000000", .35)
+    plant = mix(pal["near"], "#000000", .3)
+    plant2 = mix(pal["near"], glow, .12)
     x = -5
     while x < W + 10:
-        x += land.uniform(6, 22)
-        y = height_at(front, x)
-        r = land.uniform(3, 6.5)
-        o.append(f'<ellipse cx="{x:.1f}" cy="{y - r * .6:.1f}" rx="{r:.1f}" ry="{r * 1.1:.1f}" fill="{tree}"/>')
+        x += land.uniform(22, 48)
+        y = height_at(front, x) + 2
+        if land.random() < .3:
+            o.append(eucalyptus(x, y, land.uniform(1.1, 1.6), plant))
+        else:
+            o.append(f'<g class="sway" style="animation-delay:-{land.uniform(0, 6):.1f}s">'
+                     f'{banana(x, y, land.uniform(1.2, 1.8), land.choice((plant, plant2)))}</g>')
 
     # A few birds by day, a few fireflies after dark (more when I have been busier on GitHub).
     critters = min(max(activity // 3, 3), 12)
     if ph in ("night", "dusk"):
         for _ in range(critters):
-            o.append(f'<circle class="ff" cx="{rnd.uniform(20, 780):.0f}" cy="{rnd.uniform(255, 310):.0f}" r="1.2" '
+            o.append(f'<circle class="ff" cx="{rnd.uniform(20, 780):.0f}" cy="{rnd.uniform(262, 312):.0f}" r="1.2" '
                      f'fill="{GOLD}" style="animation-delay:-{rnd.uniform(0, 9):.1f}s;animation-duration:{rnd.uniform(7, 11):.1f}s"/>')
     else:
         for _ in range(min(critters, 6)):
