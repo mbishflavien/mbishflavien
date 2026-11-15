@@ -110,43 +110,39 @@ def mix(a, b, k):
     return "#" + "".join(f"{round(x + (y - x) * k):02x}" for x, y in zip(rgb(a), rgb(b)))
 
 
-# ---------- shapes ----------
+# ---------- line-art Kigali ----------
+# An original flat line-art skyline: pastel shapes with clean outlines on a soft sky blob.
+# Colours follow the hour (night, sunrise, day, sunset, blended like palette_at) and the weather.
 
-def ridge(i):
-    """Points along the top of ridge i (0 = farthest). Fixed seeds: the hills keep their shape all day."""
-    rnd = random.Random(70 + i)
-    near = i / (LAYERS - 1)
-    waves = [(10 + 14 * near, 0.0045), (6 + 6 * near, 0.011), (3 + 2 * near, 0.026)]
-    phases = [rnd.uniform(0, 6.28) for _ in waves]
-    return [(x, BASES[i] + sum(a * math.sin(x * f + p) for (a, f), p in zip(waves, phases)))
-            for x in range(-20, W + 40, 20)]
+G = 262                       # ground line
+BLD = ["#f4b8a0", "#f7d38a", "#a8d5c4", "#c6b8e6", "#9cc7e8", "#f2a7a0", "#d9e3a5", "#b9d6ef"]
 
-
-def smooth(pts):
-    """A smooth curve through the points (Catmull-Rom turned into Bezier curves), for soft, rounded hills."""
-    d = [f"M{pts[0][0]},{pts[0][1]:.1f}"]
-    for i in range(len(pts) - 1):
-        p0, p1, p2 = pts[max(i - 1, 0)], pts[i], pts[i + 1]
-        p3 = pts[min(i + 2, len(pts) - 1)]
-        c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
-        c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
-        d.append(f"C{c1[0]:.1f},{c1[1]:.1f} {c2[0]:.1f},{c2[1]:.1f} {p2[0]},{p2[1]:.1f}")
-    return "".join(d)
+LINE_PHASES = {
+    "night": dict(card="#0e1430", blob="#1b2650", line="#7383aa", hill="#22344c", tree="#2f4a3f", water="#24325e",
+                  tint="#141b36", tint_by=.62, cloud="#2a355a"),
+    "dawn": dict(card="#fbf2ea", blob="#fbd8bd", line="#4a4560", hill="#d3e3b4", tree="#93c79c", water="#f3cdb8",
+                 tint="#f6b89a", tint_by=.18, cloud="#fff6ef"),
+    "day": dict(card="#f8f6f0", blob="#d6ecf7", line="#3b4a6b", hill="#cfe6b8", tree="#8cc79a", water="#bfe1f2",
+                tint="#ffffff", tint_by=0, cloud="#ffffff"),
+    "dusk": dict(card="#f7e6dd", blob="#f6bd98", line="#4a3d5c", hill="#c9d6a6", tree="#86b48d", water="#eeb79c",
+                 tint="#e58a6a", tint_by=.22, cloud="#fde9dc"),
+}
 
 
-def area(pts):
-    return smooth(pts) + f" L{pts[-1][0]},{H + 5} L{pts[0][0]},{H + 5} Z"
-
-
-def shifted(pts, dy, wobble=0, k=0):
-    return [(x, y + dy + wobble * math.sin(x * .02 + k)) for x, y in pts]
-
-
-def height_at(pts, x):
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        if x0 <= x <= x1:
-            return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
-    return pts[-1][1]
+def line_palette(hour):
+    """The line-art colours for this exact time, blending through the day like palette_at."""
+    def blend(a, b, k):
+        a, b = LINE_PHASES[a], LINE_PHASES[b]
+        out = {key: mix(a[key], b[key], k) for key in a if key != "tint_by"}
+        out["tint_by"] = a["tint_by"] + (b["tint_by"] - a["tint_by"]) * k
+        return out
+    steps = [(5, "night"), (6, "dawn"), (10, "day"), (17, "day"), (18, "dusk"), (19, "night")]
+    if hour < 5 or hour >= 19:
+        return dict(LINE_PHASES["night"])
+    for (h0, a), (h1, b) in zip(steps, steps[1:]):
+        if h0 <= hour < h1:
+            return blend(a, b, (hour - h0) / (h1 - h0))
+    return dict(LINE_PHASES["day"])
 
 
 def moon_phase(now):
@@ -156,8 +152,8 @@ def moon_phase(now):
     return (days % 29.530588853) / 29.530588853
 
 
-def moon(cx, cy, r, phase, sky):
-    """The lit part of the moon for its phase: the bright limb plus the curved line between light and dark."""
+def moon(cx, cy, r, phase, sky, line):
+    """The moon in its real phase, drawn in the same outlined style."""
     k = math.cos(2 * math.pi * phase)
     rx = abs(k) * r
     top, bottom = f"{cx:.1f},{cy - r:.1f}", f"{cx:.1f},{cy + r:.1f}"
@@ -165,264 +161,213 @@ def moon(cx, cy, r, phase, sky):
         d = f"M{top} A{r},{r} 0 0 1 {bottom} A{rx:.1f},{r} 0 0 {0 if k > 0 else 1} {top}Z"
     else:             # waning: lit on the left
         d = f"M{top} A{r},{r} 0 0 0 {bottom} A{rx:.1f},{r} 0 0 {1 if k > 0 else 0} {top}Z"
-    return (f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r * 3.2:.0f}" fill="url(#moonglow)"/>'
-            f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{mix(sky, CREAM, .12)}"/>'
-            f'<path d="{d}" fill="{mix(CREAM, "#ffffff", .2)}"/>')
+    return (f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" fill="{mix(sky, CREAM, .1)}" stroke="{line}" stroke-width="1.4"/>'
+            f'<path d="{d}" fill="{CREAM}"/>')
 
 
-def cloud(rnd, uid, x, y, s, light, shade, op):
-    """A cartoon cloud: round puffs on a flat bottom, with a soft darker band underneath."""
-    puffs = [(0, 0, 13)] + [(rnd.uniform(-26, 26), rnd.uniform(-6, 2), rnd.uniform(8, 13)) for _ in range(4)]
-    base = max(py + pr for _, py, pr in puffs) - 3
-    circles = lambda fill, dy: "".join(
-        f'<circle cx="{x + px * s:.1f}" cy="{y + (py + dy) * s:.1f}" r="{pr * s:.1f}" fill="{fill}"/>' for px, py, pr in puffs)
-    return (f'<clipPath id="cl{uid}"><rect x="{x - 60 * s:.0f}" y="{y - 40 * s:.0f}" width="{120 * s:.0f}" '
-            f'height="{(base + 40) * s:.0f}"/></clipPath>'
-            f'<g clip-path="url(#cl{uid})" opacity="{op}">{circles(shade, 0)}{circles(light, -2.5)}</g>')
+def outline(line, w=1.5):
+    return f'stroke="{line}" stroke-width="{w}" stroke-linejoin="round" stroke-linecap="round"'
 
 
-def banana(x, y, s, colour):
-    """A banana plant: a short stem and big drooping leaves."""
-    leaves = "".join(
-        f'<path d="M0,-10 Q{dx * .5:.1f},{-18 + abs(dx) * .1:.1f} {dx:.1f},{-8 + abs(dx) * .35:.1f} '
-        f'Q{dx * .55:.1f},{-12 + abs(dx) * .2:.1f} 0,-9Z"/>' for dx in (-17, -11, 11, 17, -4, 6))
-    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s:.2f})" fill="{colour}">'
-            f'<rect x="-1.4" y="-11" width="2.8" height="11" rx="1"/>{leaves}</g>')
+def cloud_line(x, y, s, fill, line):
+    """An outlined cartoon cloud with a flat bottom."""
+    d = (f"M{x - 30 * s:.1f},{y:.1f} a{9 * s:.1f},{9 * s:.1f} 0 0 1 {8 * s:.1f},-{11 * s:.1f} "
+         f"a{12 * s:.1f},{12 * s:.1f} 0 0 1 {21 * s:.1f},-{6 * s:.1f} a{11 * s:.1f},{11 * s:.1f} 0 0 1 {19 * s:.1f},{5 * s:.1f} "
+         f"a{8 * s:.1f},{8 * s:.1f} 0 0 1 {12 * s:.1f},{12 * s:.1f}Z")
+    return f'<path d="{d}" fill="{fill}" {outline(line, 1.3)}/>'
 
 
-def eucalyptus(x, y, s, colour):
-    """A tall eucalyptus: thin trunk and a narrow, layered crown."""
-    return (f'<g transform="translate({x:.1f},{y:.1f}) scale({s:.2f})" fill="{colour}">'
-            f'<rect x="-.8" y="-26" width="1.6" height="26"/>'
-            f'<ellipse cx="0" cy="-30" rx="5" ry="9"/><ellipse cx="-3" cy="-22" rx="4" ry="5"/>'
-            f'<ellipse cx="3" cy="-24" rx="4" ry="5"/></g>')
+def windows(x, y, w, h, cols, rows, lit, win, off, line, rnd):
+    """A neat grid of windows; after dark some of them glow."""
+    out = []
+    gw, gh = w / cols, h / rows
+    for r in range(rows):
+        for c in range(cols):
+            on = lit and rnd.random() < .55
+            out.append(f'<rect x="{x + c * gw + gw * .25:.1f}" y="{y + r * gh + gh * .25:.1f}" width="{gw * .5:.1f}" '
+                       f'height="{gh * .5:.1f}" fill="{win if on else off}" rx=".4"/>')
+    return "".join(out)
 
 
-# ---------- the scene ----------
+def tower(x, w, h, fill, top, pal, lit, rnd, cols=3, rows=None):
+    """A building standing on the ground line, with a few kinds of roof."""
+    line = pal["line"]
+    y = G - h
+    if top == "spire":
+        shape = f"M{x},{G} V{y} H{x + w} V{G}Z M{x + w / 2},{y} V{y - 16}"
+    elif top == "slant":
+        shape = f"M{x},{G} V{y + 8} L{x + w},{y} V{G}Z"
+    elif top == "step":
+        shape = f"M{x},{G} V{y + 10} H{x + w * .2} V{y} H{x + w * .8} V{y + 10} H{x + w} V{G}Z"
+    elif top == "round":
+        shape = f"M{x},{G} V{y + w / 2} A{w / 2},{w / 2} 0 0 1 {x + w},{y + w / 2} V{G}Z"
+    else:
+        shape = f"M{x},{G} V{y} H{x + w} V{G}Z"
+    rows = rows or max(2, int(h / 12))
+    win_top = y + (12 if top in ("step", "round", "slant") else 6)
+    return (f'<path d="{shape}" fill="{fill}" {outline(line)}/>'
+            + windows(x + 3, win_top, w - 6, G - win_top - 8, cols, rows, lit, GOLD, mix(line, fill, .55), line, rnd))
+
+
+def dome(cx, w, h, fill, pal, lit):
+    """The Convention Centre's dome: a striped half-dome on a base."""
+    line = pal["line"]
+    base_y = G - 8
+    out = [f'<rect x="{cx - w / 2 - 6}" y="{base_y}" width="{w + 12}" height="8" fill="{mix(fill, "#ffffff", .3)}" {outline(line)}/>',
+           f'<path d="M{cx - w / 2},{base_y} A{w / 2},{h} 0 0 1 {cx + w / 2},{base_y}Z" fill="{fill}" {outline(line)}/>']
+    for k in range(1, 6):     # curved horizontal bands
+        f = k / 6
+        out.append(f'<path d="M{cx - w / 2 * (1 - f * f) ** .5:.1f},{base_y - h * f:.1f} '
+                   f'Q{cx:.1f},{base_y - h * f - 4:.1f} {cx + w / 2 * (1 - f * f) ** .5:.1f},{base_y - h * f:.1f}" '
+                   f'fill="none" {outline(line, .9)}/>')
+    for o in (-.55, -.2, .2, .55):   # ribs
+        out.append(f'<path d="M{cx:.1f},{base_y - h:.1f} Q{cx + o * w * .6:.1f},{base_y - h * .5:.1f} {cx + o * w * .62:.1f},{base_y}" '
+                   f'fill="none" {outline(line, .9)}/>')
+    if lit:
+        out.insert(0, f'<ellipse cx="{cx}" cy="{base_y - h / 2}" rx="{w * .75:.0f}" ry="{h:.0f}" fill="url(#lamp)" opacity=".45"/>')
+    return "".join(out)
+
+
+def tree(x, r, pal):
+    line = pal["line"]
+    return (f'<line x1="{x}" y1="{G}" x2="{x}" y2="{G - r - 4}" {outline(line, 1.4)}/>'
+            f'<circle cx="{x}" cy="{G - r - 8:.1f}" r="{r}" fill="{pal["tree"]}" {outline(line, 1.3)}/>')
+
+
+def house(x, y, w, fill, roof, pal):
+    line = pal["line"]
+    return (f'<path d="M{x},{y} V{y - w * .7:.1f} H{x + w} V{y}Z" fill="{fill}" {outline(line, 1.2)}/>'
+            f'<path d="M{x - 2},{y - w * .7:.1f} L{x + w / 2:.1f},{y - w * 1.25:.1f} L{x + w + 2},{y - w * .7:.1f}Z" fill="{roof}" {outline(line, 1.2)}/>'
+            f'<rect x="{x + w * .38:.1f}" y="{y - w * .38:.1f}" width="{w * .24:.1f}" height="{w * .38:.1f}" fill="{line}" opacity=".5"/>')
+
 
 def build(now, temp, code, activity):
     hour = now.hour + now.minute / 60
     ph = phase_of(hour)
-    pal = palette_at(hour)
+    pal = line_palette(hour)
     dark = ph == "night"
-    lit = dark or hour >= 18 or hour < 6              # windows and city lights are on
+    lit = dark or hour >= 18.5 or hour < 6
     word = describe(code)
     rnd = random.Random(now.strftime("%Y%m%d%H"))      # sky details change with the hour
-    land = random.Random(7)                             # the town, road and trees stay where they are
+    land = random.Random(7)                             # the city stays the same
     overcast = code >= 3
     foggy = 45 <= code < 51
-    glow = pal["glow"] or pal["haze"]
+    line = pal["line"]
+    tint = lambda c: mix(c, pal["tint"], pal["tint_by"])
 
     css = """
     .drift{animation:drift linear infinite}
-    @keyframes drift{from{transform:translateX(-340px)}to{transform:translateX(1140px)}}
-    .tw{animation:tw 5s ease-in-out infinite alternate}
+    @keyframes drift{from{transform:translateX(-120px)}to{transform:translateX(120px)}}
+    .tw{animation:tw 4s ease-in-out infinite alternate}
     @keyframes tw{from{opacity:.3}to{opacity:1}}
-    .ff{animation:float 9s ease-in-out infinite alternate}
-    @keyframes float{0%{transform:translate(0,0);opacity:.15}50%{opacity:.8}100%{transform:translate(18px,-12px);opacity:.2}}
-    .bird{animation:fly linear infinite}
-    @keyframes fly{from{transform:translateX(-60px)}to{transform:translateX(880px)}}
+    .bird{animation:bob 3s ease-in-out infinite alternate}
+    @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
     .drop{animation:fall .9s linear infinite}
-    @keyframes fall{from{transform:translate(0,-40px)}to{transform:translate(-10px,330px)}}
-    .sway{animation:sway 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
-    @keyframes sway{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+    @keyframes fall{from{transform:translate(0,-30px)}to{transform:translate(-8px,240px)}}
+    .spin{animation:spin 60s linear infinite;transform-box:fill-box;transform-origin:center}
+    @keyframes spin{to{transform:rotate(360deg)}}
     text{font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif}
     """
-    defs = [
-        f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{pal["top"]}"/>'
-        f'<stop offset=".72" stop-color="{pal["bottom"]}"/><stop offset="1" stop-color="{pal["bottom"]}"/></linearGradient>',
-        f'<radialGradient id="sunglow"><stop offset="0" stop-color="{glow}" stop-opacity=".5"/>'
-        f'<stop offset="1" stop-color="{glow}" stop-opacity="0"/></radialGradient>',
-        f'<radialGradient id="moonglow"><stop offset="0" stop-color="{CREAM}" stop-opacity=".18"/>'
-        f'<stop offset="1" stop-color="{CREAM}" stop-opacity="0"/></radialGradient>',
-        f'<radialGradient id="lamp"><stop offset="0" stop-color="{GOLD}" stop-opacity=".85"/>'
-        f'<stop offset="1" stop-color="{GOLD}" stop-opacity="0"/></radialGradient>',
-        f'<linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{pal["haze"]}" stop-opacity="0"/>'
-        f'<stop offset=".55" stop-color="{pal["haze"]}" stop-opacity="1"/><stop offset="1" stop-color="{pal["haze"]}" stop-opacity="0"/></linearGradient>',
-        f'<clipPath id="frame"><rect width="{W}" height="{H}" rx="14"/></clipPath>',
-    ]
-    o = []
+    defs = [f'<radialGradient id="lamp"><stop offset="0" stop-color="{GOLD}" stop-opacity=".8"/>'
+            f'<stop offset="1" stop-color="{GOLD}" stop-opacity="0"/></radialGradient>',
+            f'<clipPath id="frame"><rect width="{W}" height="{H}" rx="14"/></clipPath>',
+            f'<clipPath id="sky"><path id="blobpath" d="M95,{G} C70,200 120,150 175,140 C190,95 250,70 300,92 '
+            f'C340,50 430,48 470,85 C510,60 590,70 610,110 C670,105 735,150 715,{G}Z"/></clipPath>']
+    o = [f'<rect width="{W}" height="{H}" fill="{pal["card"]}"/>',
+         f'<path d="M95,{G} C70,200 120,150 175,140 C190,95 250,70 300,92 C340,50 430,48 470,85 '
+         f'C510,60 590,70 610,110 C670,105 735,150 715,{G}Z" fill="{pal["blob"]}"/>']
 
     # Hidden in plain sight.
     o.append(f'<text x="790" y="10" font-size="3" fill-opacity="0" text-anchor="end">{b"flag{amahoro}".hex()}</text>')
 
-    # ---- sky ----
+    # ---- sky, inside the blob ----
+    sky = []
     if dark:
-        for _ in range(80):
-            y = rnd.random() ** 1.6 * 160
-            twinkle = 'class="tw" ' if rnd.random() < .3 else ""
-            o.append(f'<circle {twinkle}cx="{rnd.uniform(0, W):.0f}" cy="{y:.0f}" r="{rnd.uniform(.4, 1):.1f}" '
-                     f'fill="{CREAM}" opacity="{rnd.uniform(.3, .8):.2f}" style="animation-delay:-{rnd.uniform(0, 5):.1f}s"/>')
-        for _ in range(5):   # a few brighter stars drawn as little sparkles
-            x, y, r = rnd.uniform(30, W - 30), rnd.uniform(15, 120), rnd.uniform(2.5, 3.5)
-            o.append(f'<path class="tw" style="animation-delay:-{rnd.uniform(0, 5):.1f}s" fill="{CREAM}" opacity=".8" '
-                     f'd="M{x:.0f},{y - r:.1f} Q{x:.0f},{y:.0f} {x + r:.1f},{y:.0f} Q{x:.0f},{y:.0f} {x:.0f},{y + r:.1f} '
-                     f'Q{x:.0f},{y:.0f} {x - r:.1f},{y:.0f} Q{x:.0f},{y:.0f} {x:.0f},{y - r:.1f}Z"/>')
+        for _ in range(26):
+            x, y = rnd.uniform(110, 700), rnd.uniform(70, 190)
+            s = rnd.uniform(1.5, 3)
+            sky.append(f'<path class="tw" style="animation-delay:-{rnd.uniform(0, 4):.1f}s" d="M{x - s:.1f},{y:.1f} H{x + s:.1f} '
+                       f'M{x:.1f},{y - s:.1f} V{y + s:.1f}" {outline(CREAM, 1)}/>')
         t = ((hour - 18) % 24) / 12
-        o.append(moon(60 + t * 680, 200 - math.sin(math.pi * t) * 150, 13, moon_phase(now), pal["top"]))
-    else:
-        t = min(max((hour - 6) / 12, 0), 1)
-        sx, sy = 60 + t * 680, 225 - math.sin(math.pi * t) * 185
-        if not overcast:
-            o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="95" fill="url(#sunglow)"/>'
-                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="36" fill="{glow}" opacity=".12"/>'
-                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="26" fill="{glow}" opacity=".16"/>'
-                     f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="16" fill="{mix(glow, "#ffffff", .35)}"/>')
-        else:
-            o.append(f'<circle cx="{sx:.0f}" cy="{sy:.0f}" r="70" fill="url(#sunglow)" opacity=".5"/>')
-    if ph in ("dawn", "dusk"):
-        o.append(f'<ellipse cx="{60 if ph == "dawn" else 740}" cy="150" rx="420" ry="70" fill="url(#sunglow)"/>')
+        sky.append(moon(150 + t * 500, 175 - math.sin(math.pi * t) * 95, 14, moon_phase(now), pal["blob"], line))
+    elif not overcast and 6 <= hour <= 18:
+        t = (hour - 6) / 12
+        sx, sy = 150 + t * 500, 190 - math.sin(math.pi * t) * 115
+        rays = "".join(f'<line x1="{sx + 22 * math.cos(a):.1f}" y1="{sy + 22 * math.sin(a):.1f}" '
+                       f'x2="{sx + 30 * math.cos(a):.1f}" y2="{sy + 30 * math.sin(a):.1f}" {outline(line, 1.4)}/>'
+                       for a in (k * math.pi / 6 for k in range(12)))
+        sky.append(f'<g class="spin">{rays}</g>'
+                   f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="15" fill="{mix(GOLD, "#ffb36b", .35)}" {outline(line, 1.4)}/>')
+    o.append(f'<g clip-path="url(#sky)">{"".join(sky)}</g>')
 
-    # Cartoon clouds drift slowly from left to right.
-    if dark:
-        light, shade, op = "#2c375a", "#1f2846", .8
-    elif ph in ("dawn", "dusk") and not 10 <= hour < 17:
-        light, shade, op = mix(glow, "#ffffff", .45), mix(pal["haze"], pal["top"], .3), .9
-    else:
-        light, shade, op = ("#e3e7ec", "#bcc4cf", .95) if overcast else ("#fbf9f4", "#d5dce5", .95)
-    for c in range(CLOUDS.get(code, 8)):
-        dur, delay = rnd.randint(150, 230), rnd.uniform(0, 230)
-        o.append(f'<g class="drift" style="animation-duration:{dur}s;animation-delay:-{delay:.0f}s">'
-                 f'{cloud(rnd, c, 0, rnd.uniform(40, 115), rnd.uniform(.9, 1.6), light, shade, op)}</g>')
+    # Clouds (more and greyer with the weather) and birds by day.
+    n = {0: 2, 1: 3, 2: 4}.get(code, 6)
+    cfill = mix(pal["cloud"], "#9aa3b0", .35) if overcast and not dark else pal["cloud"]
+    spots = [(150, 120), (330, 78), (560, 92), (650, 140), (250, 150), (470, 125)]
+    for (x, y) in spots[:n]:
+        s = land.uniform(.8, 1.15)
+        o.append(f'<g class="drift" style="animation-duration:{land.randint(30, 50)}s;animation-direction:alternate;'
+                 f'animation-delay:-{land.uniform(0, 30):.0f}s">{cloud_line(x, y, s, cfill, line)}</g>')
+    if not dark and code < 51:
+        for x, y in ((250, 115), (268, 122), (520, 70), (536, 64), (600, 120)):
+            o.append(f'<path class="bird" style="animation-delay:-{land.uniform(0, 3):.1f}s" '
+                     f'd="M{x - 5},{y} Q{x - 2.5},{y - 4} {x},{y} Q{x + 2.5},{y - 4} {x + 5},{y}" fill="none" {outline(line, 1.2)}/>')
 
-    # ---- the land, far to near ----
-    ridges = [ridge(i) for i in range(LAYERS)]
-    colours = []
-    for i, pts in enumerate(ridges):
-        depth = 1 - i / (LAYERS - 1)                           # 1 = farthest, 0 = nearest
-        colour = mix(pal["near"], pal["haze"], depth * 0.8)
-        colours.append(colour)
-        top_y = min(y for _, y in pts)
-        defs.append(f'<linearGradient id="h{i}" gradientUnits="userSpaceOnUse" x1="0" y1="{top_y:.0f}" x2="0" y2="{H}">'
-                    f'<stop offset="0" stop-color="{mix(colour, pal["haze"], .1)}"/>'
-                    f'<stop offset="1" stop-color="{mix(colour, "#000000", .2)}"/></linearGradient>'
-                    f'<clipPath id="c{i}"><path d="{area(pts)}"/></clipPath>')
-        o.append(f'<path d="{area(pts)}" fill="url(#h{i})"/>')
-        # Soft light catching the top of each ridge.
-        o.append(f'<path d="{smooth(pts)}" fill="none" stroke="{mix(colour, glow, .45)}" stroke-width="{1 + i * .25:.2f}" '
-                 f'opacity="{.18 if dark else .35}"/>')
+    # ---- hills behind the city ----
+    o.append(f'<path d="M80,{G} C120,205 210,200 300,{G}Z" fill="{pal["hill"]}" {outline(line)}/>')
+    o.append(f'<path d="M470,{G} C520,198 640,190 735,{G}Z" fill="{mix(pal["hill"], "#ffffff", .1)}" {outline(line)}/>')
 
-        # Ridge 2: Kigali on the skyline, with the Convention Centre's dome.
-        if i == 2:
-            city = []
-            for k in range(14):
-                bx = 470 + k * 9 + land.uniform(-2, 2)
-                bw, bh = land.uniform(5, 8), land.uniform(6, 20) * (1.3 if 4 <= k <= 8 else 1)
-                by = height_at(pts, bx) + 4
-                wall = mix("#1a2030", colour, .4) if lit else mix(CREAM, colour, .45)
-                city.append(f'<rect x="{bx:.1f}" y="{by - bh:.1f}" width="{bw:.1f}" height="{bh + 6:.1f}" fill="{wall}"/>')
-                if lit:
-                    for wy in range(int(by - bh + 3), int(by), 4):
-                        if land.random() < .5:
-                            city.append(f'<rect x="{bx + 1.5:.1f}" y="{wy}" width="1.4" height="1.4" fill="{GOLD}" opacity=".8"/>')
-            dx = 432
-            dy = height_at(pts, dx) + 3
-            # The Convention Centre's dome: one rounded dome with curved ribs, lit in warm colours at night.
-            dw, dh = 22, 20
-            shell = mix(GOLD, P["ochre"], .35) if lit else mix(CREAM, colour, .3)
-            rib = mix(P["sky"], GOLD, .3) if lit else mix("#8e98a6", colour, .35)
-            ribs = "".join(f'<path d="M{dx:.1f},{dy - dh:.1f} Q{dx + o * .9:.1f},{dy - dh * .55:.1f} {dx + o * 1.1:.1f},{dy}" '
-                           f'fill="none" stroke="{rib}" stroke-width="1.1"/>' for o in (-16, -8, 0, 8, 16))
-            dome = (f'<path d="M{dx - dw},{dy} A{dw},{dh} 0 0 1 {dx + dw},{dy}Z" fill="{shell}" opacity="{.85 if lit else .95}"/>'
-                    + ribs)
-            o.append(f'<g>{"".join(city)}{dome}</g>')
-            if lit:
-                o.append(f'<ellipse cx="{dx}" cy="{dy - 8}" rx="34" ry="18" fill="url(#lamp)" opacity=".35"/>')
+    # ---- the city, left to right ----
+    c = [tint(b) for b in BLD]
+    o.append(tower(110, 26, 34, c[0], "flat", pal, lit, land, 2))
+    o.append(tower(132, 20, 22, c[6], "flat", pal, lit, land, 2))
+    o.append(dome(210, 104, 58, tint("#d9e6ee"), pal, lit))
+    o.append(tower(272, 22, 70, c[5], "slant", pal, lit, land, 2))
+    o.append(tower(300, 34, 118, c[0], "spire", pal, lit, land, 3))
+    o.append(tower(339, 30, 96, c[1], "step", pal, lit, land, 3))
+    o.append(tower(374, 26, 132, c[2], "flat", pal, lit, land, 2))
+    o.append(tower(405, 38, 80, c[4], "flat", pal, lit, land, 4))
+    o.append(tower(448, 22, 104, c[3], "round", pal, lit, land, 2))
+    o.append(tower(475, 28, 88, c[6], "slant", pal, lit, land, 3))
+    for hx, hy in ((515, 238), (540, 230), (566, 236), (592, 242)):
+        o.append(house(hx, hy, 15, tint(BLD[land.randint(0, 7)]), tint("#e98b6d"), pal))
+    o.append(tower(612, 30, 64, c[7], "round", pal, lit, land, 3))
+    o.append(tower(648, 24, 40, c[5], "flat", pal, lit, land, 2))
+    o.append(tower(676, 20, 28, c[1], "flat", pal, lit, land, 2))
 
-        # Ridge 3: terraced fields, cartoon stripes in two greens.
-        if i == 3:
-            bands = []
-            for k in range(12):
-                a = shifted(pts, 6 + k * 6, 2, k)
-                b = shifted(pts, 6 + (k + 1) * 6, 2, k + 1)
-                band = smooth(a) + " L" + " L".join(f"{x},{y:.1f}" for x, y in reversed(b)) + "Z"
-                tone = mix(colour, glow if k % 2 else "#000000", .08)
-                bands.append(f'<path d="{band}" fill="{tone}"/>')
-            o.append(f'<g clip-path="url(#c{i})" opacity=".8">{"".join(bands)}</g>')
-            # A lake in the valley below, reflecting the sky.
-            lx = 250
-            ly = height_at(ridges[4], lx) - 4
-            o.append(f'<ellipse cx="{lx}" cy="{ly:.0f}" rx="70" ry="9" fill="{mix(pal["bottom"], colour, .35)}"/>'
-                     f'<ellipse cx="{lx - 10}" cy="{ly - 2:.0f}" rx="40" ry="2" fill="{mix(pal["bottom"], "#ffffff", .3)}" opacity=".5"/>')
+    # A low shopping row along the ground, trees and the lake.
+    o.append(f'<rect x="240" y="{G - 14}" width="70" height="14" fill="{tint(BLD[7])}" {outline(line, 1.3)}/>'
+             + windows(243, G - 12, 64, 10, 8, 1, lit, GOLD, mix(line, BLD[7], .55), line, land))
+    for x, r in ((96, 8), (148, 7), (265, 9), (360, 7), (500, 9), (602, 8), (700, 10), (722, 7)):
+        o.append(tree(x, r, pal))
+    o.append(f'<path d="M620,{G} C640,{G + 12} 720,{G + 12} 740,{G}Z" fill="{pal["water"]}" {outline(line, 1.3)}/>'
+             f'<line x1="650" y1="{G + 5}" x2="672" y2="{G + 5}" {outline(line, 1)}/>'
+             f'<line x1="684" y1="{G + 7}" x2="706" y2="{G + 7}" {outline(line, 1)}/>')
+    o.append(f'<line x1="70" y1="{G}" x2="740" y2="{G}" {outline(line, 1.6)}/>')
 
-        # Ridge 4: a red-dirt road winding up the hill, with houses along it.
-        if i == 4:
-            road = (f"M560,{H + 5} C540,{H - 20} 640,{H - 30} 610,{height_at(pts, 610) + 34:.0f} "
-                    f"S520,{height_at(pts, 540) + 22:.0f} 500,{height_at(pts, 500) + 4:.0f}")
-            o.append(f'<g clip-path="url(#c{i})" fill="none" stroke-linecap="round">'
-                     f'<path d="{road}" stroke="{mix("#a5532f", colour, .35)}" stroke-width="7"/>'
-                     f'<path d="{road}" stroke="{mix("#c8784a", colour, .3)}" stroke-width="2.5" opacity=".7"/></g>')
-            for cx in (150, 330, 600, 700):
-                for _ in range(land.randint(4, 7)):
-                    x = cx + land.gauss(0, 22)
-                    y = height_at(pts, x) + land.uniform(7, 24)
-                    if lit and land.random() < .85:
-                        o.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="url(#lamp)" opacity=".75"/>'
-                                 f'<rect x="{x - .8:.1f}" y="{y - .8:.1f}" width="1.6" height="1.6" fill="{mix(GOLD, "#ffffff", .4)}"/>')
-                    elif not lit:
-                        wall = mix(CREAM, colour, .15)
-                        roof = mix("#a8452b", colour, .15)
-                        o.append(f'<g transform="translate({x:.1f},{y:.1f})">'
-                                 f'<rect x="-3.5" y="-2.5" width="7" height="5" fill="{wall}"/>'
-                                 f'<rect x="-.8" y="0" width="1.6" height="2.5" fill="{mix(roof, "#000000", .4)}"/>'
-                                 f'<path d="M-4.5,-2.5 L0,-6 L4.5,-2.5Z" fill="{roof}"/></g>')
-
-        # Mist pooling in the valley behind the next ridge.
-        if i < LAYERS - 1:
-            strength = .5 if foggy else (.26 if ph != "day" else .18)
-            o.append(f'<rect x="-10" y="{BASES[i] - 6}" width="{W + 20}" height="34" fill="url(#mist)" '
-                     f'opacity="{strength * depth + .05:.2f}"/>')
-
-    # The nearest ridge: banana plants and eucalyptus trees, gently swaying.
-    front = ridges[-1]
-    plant = mix(pal["near"], "#000000", .3)
-    plant2 = mix(pal["near"], glow, .12)
-    x = -5
-    while x < W + 10:
-        x += land.uniform(22, 48)
-        y = height_at(front, x) + 2
-        if land.random() < .3:
-            o.append(eucalyptus(x, y, land.uniform(1.1, 1.6), plant))
-        else:
-            o.append(f'<g class="sway" style="animation-delay:-{land.uniform(0, 6):.1f}s">'
-                     f'{banana(x, y, land.uniform(1.2, 1.8), land.choice((plant, plant2)))}</g>')
-
-    # A few birds by day, a few fireflies after dark (more when I have been busier on GitHub).
-    critters = min(max(activity // 3, 3), 12)
-    if ph in ("night", "dusk"):
-        for _ in range(critters):
-            o.append(f'<circle class="ff" cx="{rnd.uniform(20, 780):.0f}" cy="{rnd.uniform(262, 312):.0f}" r="1.2" '
-                     f'fill="{GOLD}" style="animation-delay:-{rnd.uniform(0, 9):.1f}s;animation-duration:{rnd.uniform(7, 11):.1f}s"/>')
-    else:
-        for _ in range(min(critters, 6)):
-            y, s = rnd.uniform(45, 130), rnd.uniform(.5, .8)
-            o.append(f'<g class="bird" style="animation-duration:{rnd.randint(40, 70)}s;animation-delay:-{rnd.uniform(0, 70):.0f}s">'
-                     f'<path transform="translate(0,{y:.0f}) scale({s:.2f})" d="M-8,0 Q-4,-4 0,0 Q4,-4 8,0" fill="none" '
-                     f'stroke="{mix(pal["near"], pal["haze"], .3)}" stroke-width="1.4"/></g>')
-
-    # Weather over everything.
+    # ---- weather over the scene ----
     if foggy:
-        o.append(f'<rect width="{W}" height="{H}" fill="{pal["haze"]}" opacity=".35"/>')
+        o.append(f'<rect width="{W}" height="{H}" fill="{pal["card"]}" opacity=".45"/>')
     if code >= 51:
-        o.append(f'<rect width="{W}" height="{H}" fill="{pal["haze"]}" opacity=".18"/>')
-        for _ in range(120 if code >= 61 else 60):
-            x = rnd.randint(0, 840)
-            o.append(f'<line class="drop" x1="{x}" y1="0" x2="{x - 3}" y2="14" stroke="{mix(pal["haze"], "#ffffff", .5)}" '
-                     f'stroke-width=".8" stroke-opacity=".35" style="animation-delay:-{rnd.uniform(0, .9):.2f}s"/>')
+        drops = []
+        for _ in range(70 if code >= 61 else 35):
+            x = rnd.uniform(110, 720)
+            drops.append(f'<line class="drop" x1="{x:.0f}" y1="40" x2="{x - 3:.0f}" y2="50" {outline(line, 1.1)} '
+                         f'opacity=".55" style="animation-delay:-{rnd.uniform(0, .9):.2f}s"/>')
+        o.append(f'<g clip-path="url(#sky)">{"".join(drops)}</g>')
 
     temp_txt = f" · {temp}°C" if temp is not None else ""
     caption = f"Kigali · {now:%H:%M}{temp_txt} · {word}"
     o.append(f'<rect x="14" y="{H - 40}" width="{len(caption) * 6.6 + 24:.0f}" height="26" rx="13" '
-             f'fill="{NAVY}" fill-opacity=".45"/>'
+             f'fill="{NAVY}" fill-opacity=".55"/>'
              f'<text x="26" y="{H - 22}" font-size="13" fill="{CREAM}">{caption}</text>')
 
     return "\n".join([
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img">',
-        f"<title>Kigali right now: {pal['word']}, {word}</title>",
+        f"<title>Kigali right now: {word}</title>",
         f"<style>{css}</style>",
         f"<defs>{''.join(defs)}</defs>",
         '<g clip-path="url(#frame)">',
-        f'<rect width="{W}" height="{H}" fill="url(#sky)"/>',
         *o,
         "</g></svg>"]), caption
 
