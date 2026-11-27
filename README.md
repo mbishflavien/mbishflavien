@@ -28,5 +28,5 @@ I design for scale and security from day one, and I build for the world, not jus
 <img src="assets/strip-reverse.svg?v=1" alt="" width="100%">
 
 <!-- hills:start -->
-<img src="assets/hills.svg?v=1795813218" alt="Kigali · 23:00 · 18°C · cloudy" width="100%">
+<img src="assets/hills.svg?v=1795815012" alt="Kigali · 23:30 · 18°C · cloudy" width="100%">
 <!-- hills:end -->
